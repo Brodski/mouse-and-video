@@ -1,6 +1,4 @@
-document.onwheel = openInPopup;
-
-// Fix for netflix seeking issue
+// Fix netflix seeking issue
 let isNetflix = false;
 document.addEventListener("mvNetflix", function (e) {
   isNetflix = true;
@@ -20,35 +18,6 @@ if (location.href.includes("netflix.com")) {
   script.remove();
 }
 
-/* This combination: Wheel Down + Wheel Up + Wheel Down
-will show the videos list from which the user can choose
-one to play in the popup or, if there's only one video playing,
-open this video in the popup. */
-let wheelUp, wheelDown, lastMovement;
-function openInPopup(e) {
-  if (mvObject.shortcut || mvObject.shortcut === undefined) {
-    // e.deltaY > 0 = Wheel Down
-    // e.deltaY < 0 = Wheel Up
-    lastMovement = e.deltaY;
-    if (e.deltaY > 0) {
-      wheelDown = true;
-      setTimeout(() => {
-        if (wheelUp && lastMovement > 0) {
-          // Combo activated
-          // Ask background script if theres videos playing
-          browser.runtime.sendMessage({
-            combo_fired: true,
-          });
-        }
-        wheelUp = wheelDown = false;
-      }, 300);
-    } else {
-      if (wheelDown) {
-        wheelUp = true;
-      }
-    }
-  }
-}
 window.addEventListener(
   "message",
   (e) => {
@@ -90,78 +59,8 @@ chrome.runtime.onMessage.addListener(function (message) {
     document.onwheel = null;
     document.pvwm.onwheel = null;
     document.pvwm.mv_on = false;
-  } else if (message.playing_video) {
-    /* Background is asking if there's a video playing on this page. */
-    if (hasVideoPlaying().length > 0) {
-      if (!document.mv_popup_element) {
-        document.mv_popup_element = hasVideoPlaying()[0];
-        if (!document.mv_popup_element.hasPlaceholder) {
-          document.mv_popup_element.hasPlaceholder = true;
-          document.mv_placeholder = document.createElement("div");
-          document.mv_popup_element.parentNode.insertBefore(
-            document.mv_placeholder,
-            document.mv_popup_element
-          );
-        }
-      }
-      /* In case there is one or more videos playing
-      send positive response back to background. */
-      return Promise.resolve({
-        response: getScreenshot(document.mv_popup_element),
-      });
-    }
-  } else if (message.open_popup) {
-    open_popup();
-  } else if (message.choose_video) {
-    if (window.location === window.parent.location) {
-      // Create a div to show a list of tabs that are currently playing videos
-      if (!document.querySelector("#mv_popup_list")) {
-        const div = document.createElement("div");
-        div.id = "mv_popup_list";
-        document.body.insertBefore(div, document.body.firstChild);
-        for (const video of message.videos) {
-          // video[0] = Tab title
-          // video[1] = video screenshot src
-          // video[2] = Tab id
-          // video[3] = Tab index
-          const image = new Image();
-          image.className = "mv_image";
-          image.src = video[1];
-          document.onclick = () => div.remove();
-          image.onclick = () => {
-            browser.runtime.sendMessage({
-              video_selected: {
-                tabTitle: video[0],
-                tabId: video[2],
-                tabIndex: video[3],
-              },
-            });
-          };
-          div.appendChild(image);
-        }
-      }
-    }
-  } else if (message.has_video_playing) {
-    return Promise.resolve({ response: hasVideoPlaying().length > 0 });
   }
 });
-
-// Source: https://stackoverflow.com/a/44325898/5708169
-function getScreenshot(videoEl) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 360;
-  canvas.height = 202;
-  canvas.getContext("2d").drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL();
-}
-
-function hasVideoPlaying() {
-  /* This function returns the videos that are currently
-  playing on the page. */
-  return [...document.querySelectorAll("video")].filter(
-    (video) => !video.paused
-  );
-}
 
 // Checar se existem vídeos na página para mostrar o ícone da extensão na barra de endereço.
 const observer = new MutationObserver(function (mutationList, observer) {
@@ -184,7 +83,6 @@ chrome.storage.local.get(function (options) {
     middle: options.middle || 2,
     right: options.right || 10,
     mode: options.mode || "mode_everything",
-    shortcut: options.shortcut,
     pip: options.pip,
     brightness: 1,
     volume: 0,
@@ -210,90 +108,90 @@ function getTopIframe(win) {
 }
 
 function open_popup() {
-  if (mvObject.pip || mvObject.pip === undefined) {
-    if (!document.mv_playing_on_popup) {
-      document.mv_playing_on_popup = true;
+  // if (mvObject.pip === undefined) {
+  if (!document.mv_playing_on_popup) {
+    document.mv_playing_on_popup = true;
 
-      // Pause execution of the wheel function while transitioning to popup
-      document.mv_pause_function = true;
-
-      // Hide scrollbar
-      document.documentElement.style.overflow = "hidden";
-
-      document.mv_popup_element.className += " popup_style";
-
-      document.body.insertBefore(
-        document.mv_popup_element,
-        document.body.firstChild
-      );
-
-      // Add an event listener to play/pause video when clicking on it
-      document.mv_popup_element.onclick = () => {
-        if (!document.mv_popup_element.paused) {
-          document.mv_popup_element.pause();
-        } else {
-          document.mv_popup_element.play();
-        }
-      };
-
-      setTimeout(() => {
-        document.mv_pause_function = false;
-      }, 500);
-
-      // Check if video is inside an iframe
-      if (window.location !== window.parent.location) {
-        // The page is in an iframe
-        getTopIframe(window).postMessage({ mv_topIframe: true }, "*");
-      } else {
-        mvObject.popup("criar");
-        document.body.onfullscreenchange = null;
-      }
-    }
-  }
-}
-
-function close_popup(activatePopupTab) {
-  if (mvObject.pip || mvObject.pip === undefined) {
-    document.mv_playing_on_popup = false;
-
-    // Pause execution of the wheel function while transitioning out of popup
+    // Pause execution of the wheel function while transitioning to popup
     document.mv_pause_function = true;
 
-    // Iframe check
-    if (window.location !== window.parent.location) {
-      // The page is in an iframe
-      window.top.postMessage(
-        {
-          mv_closePopup: true,
-          activatePopupTab: activatePopupTab,
-        },
-        "*"
-      );
-    } else {
-      mvObject.popup("fechar", activatePopupTab);
-    }
+    // Hide scrollbar
+    document.documentElement.style.overflow = "hidden";
 
-    // Show scrollbar
-    document.documentElement.style.overflow = "revert";
+    document.mv_popup_element.className += " popup_style";
 
-    // Remove play/pause onclick event
-    document.mv_popup_element.onclick = null;
-
-    document.mv_popup_element.classList.remove("popup_style");
-
-    // Place video back in original position
-    document.mv_placeholder.insertAdjacentElement(
-      "afterend",
-      document.mv_popup_element
+    document.body.insertBefore(
+      document.mv_popup_element,
+      document.body.firstChild
     );
 
-    // Add delay to prevent fullscreen from happening when closing the popup
+    // Add an event listener to play/pause video when clicking on it
+    document.mv_popup_element.onclick = () => {
+      if (!document.mv_popup_element.paused) {
+        document.mv_popup_element.pause();
+      } else {
+        document.mv_popup_element.play();
+      }
+    };
+
     setTimeout(() => {
-      document.mv_popup_element.scrollIntoView();
       document.mv_pause_function = false;
     }, 500);
+
+    // Check if video is inside an iframe
+    if (window.location !== window.parent.location) {
+      // The page is in an iframe
+      getTopIframe(window).postMessage({ mv_topIframe: true }, "*");
+    } else {
+      mvObject.popup("criar");
+      document.body.onfullscreenchange = null;
+    }
   }
 }
+// }
+
+function close_popup(activatePopupTab) {
+  // if (mvObject.pip || mvObject.pip === undefined) {
+  document.mv_playing_on_popup = false;
+
+  // Pause execution of the wheel function while transitioning out of popup
+  document.mv_pause_function = true;
+
+  // Iframe check
+  if (window.location !== window.parent.location) {
+    // The page is in an iframe
+    window.top.postMessage(
+      {
+        mv_closePopup: true,
+        activatePopupTab: activatePopupTab,
+      },
+      "*"
+    );
+  } else {
+    mvObject.popup("fechar", activatePopupTab);
+  }
+
+  // Show scrollbar
+  document.documentElement.style.overflow = "revert";
+
+  // Remove play/pause onclick event
+  document.mv_popup_element.onclick = null;
+
+  document.mv_popup_element.classList.remove("popup_style");
+
+  // Place video back in original position
+  document.mv_placeholder.insertAdjacentElement(
+    "afterend",
+    document.mv_popup_element
+  );
+
+  // Add delay to prevent fullscreen from happening when closing the popup
+  setTimeout(() => {
+    document.mv_popup_element.scrollIntoView();
+    document.mv_pause_function = false;
+  }, 500);
+}
+// }
 
 // Update values if user changes them in the options
 chrome.storage.onChanged.addListener(function (changes) {
@@ -458,7 +356,7 @@ function run() {
         } else {
           if (e.offsetY <= vid.clientHeight / 2) {
             if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {
-              activateFullScreenPopupFeature(delta, vid, e)
+              activateFullScreenPopupFeature(delta, vid, e);
             } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {
               changePlaybackRate(delta, vid);
             } else {
@@ -473,7 +371,6 @@ function run() {
   }
 
   function main(e) {
-    openInPopup(e);
     /* document.mv_pause_main is useful when transitioning to the popup.
     Otherwise document.mv_popup_element will change when scrolling too fast */
     if (!document.mv_pause_function && !e.target.mv_on) {

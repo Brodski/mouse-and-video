@@ -1,57 +1,53 @@
 {
-	"extensionName": {
-		"message": "Mouse & Video"
-	},
+  "extensionName": {
+    "message": "Mouse & Video"
+  },
 
-	"extensionDescription": {
-		"message": "This extension allows you to control a video player by using the mouse wheel."
-	},
+  "extensionDescription": {
+    "message": "This extension allows you to control a video player by using the mouse wheel."
+  },
 
-	"fb_title":{
-		"message": "Backward/Forward increments (in seconds): "
-	},
+  "fb_title": {
+    "message": "Backward/Forward increments (in seconds): "
+  },
 
-	"left":{
-		"message": "Left (Default: 5)"
-	},
+  "left": {
+    "message": "Left (Default: 5)"
+  },
 
-	"middle":{
-		"message": "Middle (Default: 2)"
-	},
+  "middle": {
+    "message": "Middle (Default: 2)"
+  },
 
-	"right":{
-		"message": "Right (Default: 10)"
-	},
+  "right": {
+    "message": "Right (Default: 10)"
+  },
 
-	"enabled":{
-		"message": "Enabled"
-	},
+  "enabled": {
+    "message": "Enabled"
+  },
 
-	"disabled":{
-		"message": "Disabled"
-	},
+  "disabled": {
+    "message": "Disabled"
+  },
 
-	"always":{
-		"message": "Disabled on this site"
-	},
+  "always": {
+    "message": "Disabled on this site"
+  },
 
-	"vonly":{
-		"message": "Change volume"
-	},
+  "vonly": {
+    "message": "Change volume"
+  },
 
-	"ponly":{
-		"message": "Seek backward/forward ('Middle' value will be used)"
-	},
+  "ponly": {
+    "message": "Seek backward/forward ('Middle' value will be used)"
+  },
 
-	"both":{
-		"message": "Everything"
-	},
+  "both": {
+    "message": "Everything"
+  },
 
-	"mode_title":{
-		"message": "Use the whole video area to:"
-	},
-
-    "shortcut":{
-		"message": "Use shortcut to open popup"
-	}
+  "mode_title": {
+    "message": "Use the whole video area to:"
+  }
 }
