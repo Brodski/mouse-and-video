@@ -1,3 +1,16 @@
+// Check if there is video on the page. If there is, send a message to the
+// background script to show the extension's icon and activate it.
+const observer = new MutationObserver(function (mutationList, observer) {
+  if (document.querySelector("video")) {
+    chrome.runtime.sendMessage({
+      showIcon: true,
+    });
+    observer.disconnect();
+  }
+});
+const config = { attributes: true, childList: true, subtree: true };
+observer.observe(document, config);
+
 // Fix netflix seeking issue
 let isNetflix = false;
 document.addEventListener("mvNetflix", function (e) {
@@ -61,19 +74,6 @@ chrome.runtime.onMessage.addListener(function (message) {
     document.pvwm.mv_on = false;
   }
 });
-
-// Checar se existem vídeos na página para mostrar o ícone da extensão na barra de endereço.
-const observer = new MutationObserver(function (mutationList, observer) {
-  const videos = document.querySelectorAll("video");
-  if (videos.length > 0) {
-    chrome.runtime.sendMessage({
-      mostraIcone: true,
-    });
-    observer.disconnect();
-  }
-});
-var config = { attributes: true, childList: true, subtree: true };
-observer.observe(document, config);
 
 let mvObject = {};
 

@@ -13,7 +13,7 @@ browser.tabs.onActivated.addListener((info) => {
 });
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
-  if (message.mostraIcone) {
+  if (message.showIcon) {
     chrome.pageAction.show(sender.tab.id);
   } else if (message.popup) {
     if (message.acao === "criar") {
