@@ -5,6 +5,9 @@ const observer = new MutationObserver(function (mutationList, observer) {
     chrome.runtime.sendMessage({
       showIcon: true,
     });
+    console.log("Found vid")
+    console.log(mutationList)
+    console.log(observer)
     observer.disconnect();
   }
 });
@@ -48,14 +51,14 @@ window.addEventListener(
         document.mv_popup_element.className += " popup_style";
         chrome.runtime.sendMessage({
           popup: true,
-          acao: "criar",
+          acao: "criar", // action: create
         });
       } else if (e.data.mv_closePopup) {
         document.mv_popup_element.classList.remove("popup_style");
         document.documentElement.style.overflow = "revert";
         chrome.runtime.sendMessage({
           popup: true,
-          acao: "fechar",
+          acao: "fechar", // action: close
           activatePopupTab: e.data.activatePopupTab,
         });
       }
@@ -84,6 +87,8 @@ chrome.storage.local.get(function (options) {
     right: options.right || 10,
     mode: options.mode || "mode_everything",
     pip: options.pip,
+    newTab: options.newTab,
+    volumeRate: options.volumeRate || 3,
     brightness: 1,
     volume: 0,
     popup: (action, activatePopupTab) => {
@@ -205,7 +210,7 @@ function run() {
       video.volume = 0;
     }
     mvObject.volume = video.volume;
-    mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * 3) : -1 * (0.01 * 3));
+    mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
     video.volume = parseFloat(
       Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)
     );

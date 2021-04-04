@@ -11,10 +11,15 @@
         <legend id="fb"></legend>
         <label for="left"></label>
         <input name="left" type="number" /><br />
+
         <label for="middle"></label>
         <input name="middle" type="number" /><br />
+
         <label for="right"></label>
         <input name="right" type="number" /><br />
+
+        <label for="volumeRate"></label>
+        <input name="volumeRate" type="number" /><br />
       </fieldset>
       <br />
       <fieldset>
@@ -53,11 +58,17 @@
       <br />
       <fieldset id="pip-field">
         <legend>PIP (Picture-in-Picture)</legend>
-        <input id="pip" type="checkbox" name="pip" value="pip" /><label
-          for="pip"
-        >
-          Enabled
-        </label>
+        <input id="pip" type="radio" name="pip" value="pip" />
+        <label for="pip"> Enabled </label>
+        <input id="newTab" type="radio" name="pip" value="pip" />
+        <label for="newTab" > Enabled </label>
+        <br />
+      </fieldset>
+      <br />
+      <fieldset id="newTab-field">
+        <legend>Open video in new tab</legend>
+        <input id="newTab" type="checkbox" name="newtab" value="newtab" />
+        <label for="newTab" > Enabled </label>
         <br />
       </fieldset>
       <br /><br />

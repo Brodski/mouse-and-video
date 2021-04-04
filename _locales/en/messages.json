@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "Mouse & Video"
+    "message": "Mouse & Video - test"
   },
 
   "extensionDescription": {
@@ -21,6 +21,10 @@
 
   "right": {
     "message": "Right (Default: 10)"
+  },
+
+  "volumeRate": {
+    "message": "Volume per scroll"
   },
 
   "enabled": {

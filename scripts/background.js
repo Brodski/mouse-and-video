@@ -16,7 +16,7 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   if (message.showIcon) {
     chrome.pageAction.show(sender.tab.id);
   } else if (message.popup) {
-    if (message.acao === "criar") {
+    if (message.acao === "criar") { // message.action === create
       browser.tabs.highlight({
         windowId: sender.tab.windowId,
         tabs: [previousTabIndex],
@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
             top: screen.height - 255,
           });
         });
-    } else if (message.acao === "fechar") {
+    } else if (message.acao === "fechar") { // message.action === close
       browser.windows.getCurrent().then((winInfo) => {
         // Move back to main window
         browser.tabs
@@ -77,10 +77,17 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
 });
 
 chrome.pageAction.onClicked.addListener(function (tab) {
+  // This event will not fire if the page action has a popup.
+  // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/pageAction/onClicked
+  console.log("clicked on pageAction!")
   const domain = tab.url.match(
     /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im
   )[0];
+  console.log("domain")
+  console.log(domain)
+  //https://stackoverflow.com/questions/5364062/how-can-i-save-information-locally-in-my-chrome-extension
   chrome.storage.local.get(domain, function (info) {
+    // call back function. info = returned data fromn key "domain"
     if (Object.keys(info).length > 0) {
       chrome.storage.local.remove(domain);
       chrome.tabs.sendMessage(tab.id, {

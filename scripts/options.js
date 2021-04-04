@@ -5,10 +5,12 @@ window.onload = function () {
     });
   }
   const pipCheckbox = document.querySelector("#pip");
+  const newTabCheckbox = document.querySelector("#newTab");
   const incrementsLegend = document.querySelector("#fb");
   const leftInputLabel = document.querySelector("label[for=left]");
   const middleInputLabel = document.querySelector("label[for=middle]");
   const rightInputLabel = document.querySelector("label[for=right]");
+  const volumeRateInputLabel = document.querySelector("label[for=volumeRate]");
   const modeLegend = document.querySelector("#mode");
 
   document.querySelector(
@@ -29,7 +31,9 @@ window.onload = function () {
   leftInputLabel.textContent = chrome.i18n.getMessage("left");
   middleInputLabel.textContent = chrome.i18n.getMessage("middle");
   rightInputLabel.textContent = chrome.i18n.getMessage("right");
+  volumeRateInputLabel.textContent = chrome.i18n.getMessage("volumeRate");
   pipCheckbox.textContent = chrome.i18n.getMessage("pip");
+  newTabCheckbox.textContent = chrome.i18n.getMessage("newTab");
 
   for (const input of document.querySelectorAll("input")) {
     input.addEventListener("blur", (e) => {
@@ -42,10 +46,14 @@ window.onload = function () {
   chrome.storage.local.get(function (options) {
     if (options.mode === undefined) options.mode = "mode_everything";
     if (options.pip === undefined) options.pip = true;
+    if (options.newTab === undefined) options.newTab = true;
     document.querySelector("[name='left'").value = options.left || 5;
     document.querySelector("[name='middle'").value = options.middle || 2;
     document.querySelector("[name='right'").value = options.right || 10;
+    document.querySelector("[name='volumeRate'").value = options.right || 6;
+    document.querySelector("[name='newTab'").value = options.newTab || 6;
     pipCheckbox.checked = options.pip;
+    newTabCheckbox.checked = options.newTab;
     document.querySelector("#" + options.mode).checked = true;
   });
 };
