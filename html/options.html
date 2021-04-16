@@ -36,39 +36,35 @@
           name="mode"
           value="mode_seek_middle"
         /><label for="mode_seek_middle">
-          Seek backward/forward ("Middle" value will be used)</label
-        ><br />
+          Seek backward/forward ("Middle" value will be used)</label><br />
         <input
           id="mode_seek_all"
           type="radio"
           name="mode"
           value="mode_seek_all"
         /><label for="mode_seek_all">
-          Seek backward/forward (three sections will be used)</label
-        ><br />
+          Seek backward/forward (three sections will be used)</label><br/>
         <input
           id="mode_everything"
           type="radio"
           name="mode"
           value="mode_everything"
           checked
-        /><label for="mode_everything"> Everything</label><br />
+        /><label for="mode_everything"> Everything</label><br/>
       </fieldset>
 
       <br />
-      <fieldset id="pip-field">
-        <legend>PIP (Picture-in-Picture)</legend>
-        <input id="pip" type="radio" name="pip" value="pip" />
-        <label for="pip"> Enabled </label>
-        <input id="newTab" type="radio" name="pip" value="pip" />
-        <label for="newTab" > Enabled </label>
-        <br />
-      </fieldset>
-      <br />
-      <fieldset id="newTab-field">
-        <legend>Open video in new tab</legend>
-        <input id="newTab" type="checkbox" name="newtab" value="newtab" />
-        <label for="newTab" > Enabled </label>
+      <!-- <fieldset id="pip-field"> -->
+      <fieldset >
+        <legend id="pip-field">Pop out Video</legend>
+        <input id="pip" type="radio" name="popout" value="pip" />
+        <label for="pip"> Picture-in-Picture </label>
+        <br/>
+        <input id="newTab" type="radio" name="popout" value="newTab" />
+        <label for="newTab" > New Tab </label>
+        <br/>
+        <input id="disable-popout" type="radio" name="popout" value="disabled" />
+        <label for="disable-popout" > Disable </label>
         <br />
       </fieldset>
       <br /><br />

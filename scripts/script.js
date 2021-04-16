@@ -86,11 +86,12 @@ chrome.storage.local.get(function (options) {
     middle: options.middle || 2,
     right: options.right || 10,
     mode: options.mode || "mode_everything",
-    pip: options.pip,
-    newTab: options.newTab,
+    pip: options.pip || true,
+    newTab: options.newTab || true,
     volumeRate: options.volumeRate || 3,
     brightness: 1,
     volume: 0,
+    popout: options.popout || "pip",
     popup: (action, activatePopupTab) => {
       chrome.runtime.sendMessage({
         popup: true,
@@ -113,7 +114,6 @@ function getTopIframe(win) {
 }
 
 function open_popup() {
-  // if (mvObject.pip === undefined) {
   if (!document.mv_playing_on_popup) {
     document.mv_playing_on_popup = true;
 

@@ -39,6 +39,8 @@
     "message": "Disabled on this site"
   },
 
+
+
   "vonly": {
     "message": "Change volume"
   },
@@ -47,11 +49,29 @@
     "message": "Seek backward/forward ('Middle' value will be used)"
   },
 
+
   "both": {
     "message": "Everything"
   },
 
   "mode_title": {
     "message": "Use the whole video area to:"
+  },
+
+  "pop_out_video": {
+    "message": "Pop out video"
+  },
+
+  "pip": {
+    "message": "Picture-In-Picture"
+  },
+
+  "newTab": {
+    "message": "New tab"
+  },
+
+  "disable-popout": {
+    "message": "Disable"
   }
+
 }
