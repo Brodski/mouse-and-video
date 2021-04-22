@@ -66,6 +66,7 @@ window.onload = function () {
 
     document.querySelector("[name='pip'").checked  = options.pip || true;
     document.querySelector("[name='newTab'").checked  = options.newTab || false;
+    document.querySelector("[name='newTab'").checked  = options.popoutSetting || false;
     
     // document.querySelector("#" + options.mode).checked = true;
 

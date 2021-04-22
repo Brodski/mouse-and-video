@@ -61,6 +61,7 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
 
   // Aqui vamos verificar se a extensão deve ser desativada neste site.
   // Se o usuário desativou então o domain fica guardado.
+  // Here we will check if the extension should be disabled on this website. ... If the user has deactivated then the domain is saved.
   const domain = sender.tab.url.match(
     /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im
   )[0];
@@ -96,6 +97,7 @@ chrome.pageAction.onClicked.addListener(function (tab) {
       setIcon("enabled", tab.id);
     } else {
       // Usuário desativou a extensão, então manda uma mensagem para apagar o listener.
+      // User deactivated the extension, then sends a message to delete the listener
       chrome.tabs.sendMessage(tab.id, {
         disabled: true,
       });

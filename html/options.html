@@ -36,34 +36,34 @@
           name="mode"
           value="mode_seek_middle"
         /><label for="mode_seek_middle">
-          Seek backward/forward ("Middle" value will be used)</label><br />
+          Simple-Skip backward/forward ("Middle" value will be used)</label><br />
         <input
           id="mode_seek_all"
           type="radio"
           name="mode"
           value="mode_seek_all"
         /><label for="mode_seek_all">
-          Seek backward/forward (three sections will be used)</label><br/>
+          Advance-Skip backward/forward (Left, center, right sections skip different amount of seconds)</label><br/>
         <input
           id="mode_everything"
           type="radio"
           name="mode"
           value="mode_everything"
           checked
-        /><label for="mode_everything"> Everything</label><br/>
+        /><label for="mode_everything"> Everything (Skip </label><br/>
       </fieldset>
 
       <br />
       <!-- <fieldset id="pip-field"> -->
       <fieldset >
         <legend id="pip-field">Pop out Video</legend>
-        <input id="pip" type="radio" name="popout" value="pip" />
+        <input id="pip" type="radio" name="popoutSetting" value="pip" />
         <label for="pip"> Picture-in-Picture </label>
         <br/>
-        <input id="newTab" type="radio" name="popout" value="newTab" />
+        <input id="newTab" type="radio" name="popoutSetting" value="newTab" />
         <label for="newTab" > New Tab </label>
         <br/>
-        <input id="disable-popout" type="radio" name="popout" value="disabled" />
+        <input id="disable-popout" type="radio" name="popoutSetting" value="disabled" />
         <label for="disable-popout" > Disable </label>
         <br />
       </fieldset>
