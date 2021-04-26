@@ -3,6 +3,7 @@ let previousTabIndex;
 let popups = {};
 
 browser.tabs.onActivated.addListener((info) => {
+  console.log("activated!")
   browser.windows.get(info.windowId).then((window) => {
     if (window.type !== "popup") {
       browser.tabs.get(info.previousTabId).then((tab) => {
@@ -13,6 +14,7 @@ browser.tabs.onActivated.addListener((info) => {
 });
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
+  console.log("Some message??")
   if (message.showIcon) {
     chrome.pageAction.show(sender.tab.id);
   } else if (message.popup) {

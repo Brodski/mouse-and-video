@@ -1,4 +1,5 @@
 window.onload = function () {
+  console.log("loaded")
   function saveChanges(option, value) {
     chrome.storage.local.set({
       [option]: value,
@@ -9,7 +10,7 @@ window.onload = function () {
   const popoutLegend = document.querySelector("#pip-field");
   const pipLegend = document.querySelector("label[for=pip]");
   const newTabLegend = document.querySelector("label[for=newTab]");
-  const disableLegend = document.querySelector("label[for=disable-popout]");
+  const disableLegend = document.querySelector("label[for=disable]");
 
   const incrementsLegend = document.querySelector("#fb");
   const leftInputLabel = document.querySelector("label[for=left]");
@@ -23,7 +24,7 @@ window.onload = function () {
   document.querySelector("#mode_seek_middle").textContent = chrome.i18n.getMessage("vonly");
   document.querySelector("#mode_volume").textContent = chrome.i18n.getMessage("ponly");
   // document.querySelector("#mode_seek_all").textContent = chrome.i18n.getMessage("mode_seek_all");
-  document.querySelector("#mode_everything").textContent = chrome.i18n.getMessage("both");
+  // document.querySelector("#mode_everything").textContent = chrome.i18n.getMessage("both");
 
   // document.querySelector("#mode_seek_middle").textContent = chrome.i18n.getMessage("vonly");
   // document.querySelector("#mode_volume").textContent = chrome.i18n.getMessage("mode_volume");
@@ -37,7 +38,7 @@ window.onload = function () {
   // pipLegend.textContent = "hello";
   newTabLegend.textContent = chrome.i18n.getMessage("newTab");
   // newTabLegend.textContent = "a b c d";
-  disableLegend.textContent = chrome.i18n.getMessage("disable-popout");
+  disableLegend.textContent = chrome.i18n.getMessage("disable");
 
   incrementsLegend.textContent = chrome.i18n.getMessage("fb_title");
   leftInputLabel.textContent = chrome.i18n.getMessage("left");
@@ -55,30 +56,20 @@ window.onload = function () {
   }
 
   chrome.storage.local.get(function (options) {
+    console.log("Got something in options sotrage")
+    console.log(options.popoutSetting)
     if (options.mode === undefined) options.mode = "mode_everything";
     if (options.pip === undefined) options.pip = true;
     if (options.newTab === undefined) options.newTab = false;
+    if (options.popoutSetting === undefined) options.popoutSetting = "disable";
 
     document.querySelector("[name='left'").value = options.left || 5;
     document.querySelector("[name='middle'").value = options.middle || 2;
     document.querySelector("[name='right'").value = options.right || 10;
     document.querySelector("[name='volumeRate'").value = options.right || 6;
 
-    document.querySelector("[name='pip'").checked  = options.pip || true;
-    document.querySelector("[name='newTab'").checked  = options.newTab || false;
-    document.querySelector("[name='newTab'").checked  = options.popoutSetting || false;
-    
-    // document.querySelector("#" + options.mode).checked = true;
-
-    // const pop_radio = document.getElementsByName("popout");
-    // let value = null;
-    // for (let i=0; i < pop_radio.length; i++){
-    //   if (pop_radio[i].checked) {
-    //     value = pop_radio[i].value;
-    //   }
-    // }
-    // if (options.popout === undefined) options.popout = value;
-    // if (options.popout === undefined) options.popout = "pip";
+    document.querySelector("#" + options.popoutSetting).checked = true;
+    document.querySelector("#" + options.mode).checked = true;
 
   });
 };

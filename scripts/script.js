@@ -75,7 +75,7 @@ chrome.storage.local.get(function (options) {
     volumeRate: options.volumeRate    || 3,
     brightness: 1,
     volume:     0,
-    popoutSetting: options.popoutSetting || "pip",
+    popoutSetting: options.popoutSetting || "disable",
 
     popup: (action, activatePopupTab) => {
       chrome.runtime.sendMessage({
@@ -107,6 +107,8 @@ function getTopIframe(win) {
 
 // Update values if user changes them in the options
 chrome.storage.onChanged.addListener(function (changes) {
+  console.log("something happend")
+  console.log(changes)
   mvObject[Object.keys(changes)[0]] = changes[Object.keys(changes)[0]].newValue;
 });
 
@@ -182,12 +184,20 @@ function run() {
       if (e.shiftKey) {
         setBrightness(delta, vid);
       } else {
-        if (mvObject.mode === "mode_seek_middle") {
+
+        // Change Volume
+        if (mvObject.mode === "mode_seek_middle") {          
           vid.currentTime += getIncrement(delta, mvObject.middle);
-        } else if (mvObject.mode === "mode_seek_all") {
+
+        // Advance skip
+        } else if (mvObject.mode === "mode_seek_all") {          
           seekVideoByAreas(cX, delta, vid);
+
+        // Change volume
         } else if (mvObject.mode === "mode_volume") {
           changeVolume(delta, vid);
+
+        // Everything 
         } else {
           if (e.offsetY <= vid.clientHeight / 2) {
             if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {
@@ -395,13 +405,102 @@ function controlPopoutEvent(data) {
   console.log("mvObject")
   console.log(mvObject)
   if (mvObject.popoutSetting == "pip"){
-    activateFullScreenPopupFeature(delta, vid, e)
+    activatePopupFeature(delta, vid, e)
   }
   if (mvObject.popoutSetting == "newTab"){
-
+    activateNewTab(delta, vid, e)
+  }
+  if (mvObject.popoutSetting == "fullscreen"){
+    activateFullScreen(delta, vid, e)
   }
   if (mvObject.popoutSetting == "disabled"){
+    // do nothing
+  }
+}
 
+function activateNewTab(delta, vid, e) {
+
+}
+
+function activateFullScreen(delta, vid, e) {
+  if (delta > 0) {
+    open_popup();
+  } else if (delta < 0) {
+    close_popup(true);
+  }
+}
+
+function activatePopupFeature(delta, vid, e) {
+  if (delta > 0) {
+    // Close popup and stay on the current tab
+    if (document.mv_playing_on_popup) {
+      close_popup(false);
+    } else {
+      // The popup must open only when the video is not in fullscreen mode.
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+
+        // We need this so that when the user scrolls out of fullscreen
+        // the popup doesn't open up unwantedly
+        document.mv_pause_function = true;
+        setTimeout(() => {
+          document.mv_pause_function = false;
+        }, 500);
+      } else {
+        open_popup();
+      }
+    }
+  } else if (delta < 0) {
+    // Close popup and move to the tab playing the video
+    if (document.mv_playing_on_popup) {
+      close_popup(true);
+    } else {
+      if (document.fullscreenElement == null) {
+        (function (x) {
+          setTimeout(function () {
+            if (document.fullscreenElement == null) {
+              const attribs = [
+                ...document
+                  .elementsFromPoint(e.x, e.y)
+                  .filter(
+                    (el) =>
+                      (el.contains(vid) &&
+                        el.clientWidth === e.target.clientWidth) ||
+                      el.clientHeight === e.target.clientHeight
+                  )
+                  .pop()
+                  .querySelectorAll("*"),
+              ]
+                .map((node) => [...node.attributes])
+                .reduce((acc, cur) => acc.concat(cur), [])
+                .filter(
+                  (attrib) =>
+                    attrib.nodeValue
+                      .toLowerCase()
+                      .replace(" ", "")
+                      .indexOf("fullscreen") >= 0
+                )
+                .filter(
+                  (attrib) =>
+                    attrib.ownerElement.clientWidth !== x.clientWidth &&
+                    attrib.ownerElement.clientHeight !== x.clientHeight
+                );
+              for (const x of attribs) {
+                try {
+                  if (document.fullscreenElement == null)
+                    x.ownerElement.click();
+                } catch (e) {}
+              }
+              setTimeout(() => {
+                if (document.fullscreenElement == null) {
+                  x.requestFullscreen();
+                }
+              }, 100);
+            }
+          }, 100);
+        })(vid);
+      }
+    }
   }
 }
 
