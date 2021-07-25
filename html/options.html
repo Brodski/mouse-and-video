@@ -3,9 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <script src="/scripts/options.js"></script>
+    <script src="./options.js"></script>
+    <script>
+
+
+    </script>
     <link rel="stylesheet" href="/style/style.css" />
+    <link rel="stylesheet" href="../style/style.css" />
   </head>
   <body>
+  <div class="modal-like" > 
+    <div class="modal-middle"> 
+      <span class="close" id="close" >ⓧ </span>
+      <img id="img_vol" src="../img/volume.png"/>
+      <img id="img_seek" src="../img/seek.png"/>
+      <img id="img_every" src="../img/everything.png"/>
+    </div>
+  </div>
     <form>
       <fieldset id="increments">
         <legend id="fb"></legend>
@@ -19,8 +33,9 @@
         <input name="right" type="number" /><br />
 
         <label for="volumeRate"></label>
-        <input name="volumeRate" type="number" /><br />
+        <input name="volumeRate" type="number" min="-100" max="100" /><br />
       </fieldset>
+
       <br />
       <fieldset>
         <legend id="mode"></legend>
@@ -29,28 +44,34 @@
           type="radio"
           name="mode"
           value="mode_volume"
-        /><label for="mode_volume"> Change volume only</label><br />
-        <input
+        /><label for="mode_volume"> Volume change only</label> <span class="hint_icon" id="volume_hint"> &#128712; </span>
+        
+        
+        <br/>
+    <!-- <input
           id="mode_seek_middle"
           type="radio"
           name="mode"
           value="mode_seek_middle"
-        /><label for="mode_seek_middle">
-          Simple Skip backward/forward ("Middle" value will be used)</label><br />
-        <input
+        /><label for="mode_seek_middle"> Simple Skip backward/forward ("Middle" value will be used)</label>  &#128712; </span>
+          
+          <br /> -->
+    <input
           id="mode_seek_all"
           type="radio"
           name="mode"
           value="mode_seek_all"
         /><label for="mode_seek_all">
-          Advance Skip backward/forward (Left, center, right sections skip different amount of seconds)</label><br/>
+          Seek backward/forward only (no Volume, no Popout)</label><span class="hint_icon" id="seek_hint"> &#128712; </span>
+          <br/>  
         <input
           id="mode_everything"
           type="radio"
           name="mode"
           value="mode_everything"
           checked
-        /><label for="mode_everything"> Everything (Skip, Volume, & Popout) </label><br/>
+        /><label for="mode_everything"> Everything (Skip, Volume, & Popout) </label><span class="hint_icon" id="everything_hint"> &#128712; </span>
+        <br/>
       </fieldset>
 
       <br />

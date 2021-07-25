@@ -21,8 +21,8 @@ window.onload = function () {
   
   modeLegend.textContent = chrome.i18n.getMessage("mode_title");
 
-  document.querySelector("#mode_seek_middle").textContent = chrome.i18n.getMessage("vonly");
-  document.querySelector("#mode_volume").textContent = chrome.i18n.getMessage("ponly");
+  // document.querySelector("#mode_seek_middle").textContent = chrome.i18n.getMessage("vonly");
+  // document.querySelector("#mode_volume").textContent = chrome.i18n.getMessage("ponly");
   // document.querySelector("#mode_seek_all").textContent = chrome.i18n.getMessage("mode_seek_all");
   // document.querySelector("#mode_everything").textContent = chrome.i18n.getMessage("both");
 
@@ -46,7 +46,7 @@ window.onload = function () {
   rightInputLabel.textContent = chrome.i18n.getMessage("right");
   volumeRateInputLabel.textContent = chrome.i18n.getMessage("volumeRate");
 
-  // no longer needed???
+  // no longer needed??? no longer have checkboxes
   for (const input of document.querySelectorAll("input")) {
     input.addEventListener("blur", (e) => {
       let value = e.target.value;
@@ -57,7 +57,7 @@ window.onload = function () {
 
   chrome.storage.local.get(function (options) {
     console.log("Got something in options sotrage")
-    console.log(options.popoutSetting)
+    console.log(options)
     if (options.mode === undefined) options.mode = "mode_everything";
     if (options.pip === undefined) options.pip = true;
     if (options.newTab === undefined) options.newTab = false;
@@ -66,7 +66,7 @@ window.onload = function () {
     document.querySelector("[name='left'").value = options.left || 5;
     document.querySelector("[name='middle'").value = options.middle || 2;
     document.querySelector("[name='right'").value = options.right || 10;
-    document.querySelector("[name='volumeRate'").value = options.right || 6;
+    document.querySelector("[name='volumeRate'").value = options.volumeRate || 6;
 
     document.querySelector("#" + options.popoutSetting).checked = true;
     document.querySelector("#" + options.mode).checked = true;

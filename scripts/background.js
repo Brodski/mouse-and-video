@@ -14,10 +14,14 @@ browser.tabs.onActivated.addListener((info) => {
 });
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
-  console.log("Some message??")
+  console.log("Some message - some sender")
+  console.log(message)
+  console.log(sender)
+  console.log(" --- ")
   if (message.showIcon) {
     chrome.pageAction.show(sender.tab.id);
-  } else if (message.popup) {
+  } 
+  else if (message.popup) {
     if (message.acao === "criar") { // message.action === create
       browser.tabs.highlight({
         windowId: sender.tab.windowId,
@@ -41,7 +45,8 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
             top: screen.height - 255,
           });
         });
-    } else if (message.acao === "fechar") { // message.action === close
+    } 
+    else if (message.acao === "fechar") { // message.action === close
       browser.windows.getCurrent().then((winInfo) => {
         // Move back to main window
         browser.tabs

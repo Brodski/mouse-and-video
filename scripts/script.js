@@ -5,7 +5,7 @@ const observer = new MutationObserver(function (mutationList, observer) {
     chrome.runtime.sendMessage({
       showIcon: true,
     });
-    console.log("Found vid")
+    console.log("MUTATION ----------- Found video, sending 'showicon'")
     console.log(mutationList)
     console.log(observer)
     observer.disconnect();
@@ -18,6 +18,8 @@ observer.observe(document, config);
 window.addEventListener(
   "message",
   (e) => {
+    console.log('recieved some message e', e)
+    console.log('recieved some message e.data', e.data)
     if (e.data.mv_topIframe) {
       // Tell the top window which iframe to move
       window.top.postMessage({ mv_iframeSrc: window.location.href }, "*");
@@ -72,7 +74,7 @@ chrome.storage.local.get(function (options) {
     mode:       options.mode          || "mode_everything",
     // pip:        options.pip           || true,
     newTab:     options.newTab        || false,
-    volumeRate: options.volumeRate    || 3,
+    volumeRate: options.volumeRate    || 6,
     brightness: 1,
     volume:     0,
     popoutSetting: options.popoutSetting || "disable",
@@ -118,13 +120,34 @@ chrome.storage.onChanged.addListener(function (changes) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 function run() {
+  console.log("!!! IN RUN !!!")
   function changeVolume(delta, video) {
     if (video.muted) {
       video.muted = false;
       video.volume = 0;
     }
+    // console.log("VOL - delta ", delta)
+    // console.log("VOL - video.volume ", video.volume)
+    // console.log("VOL - mvObject.volumeRate ",  mvObject.volumeRate)
+    // console.log("VOL - volume change: ", 1 * (0.01 * mvObject.volumeRate))
+    
     mvObject.volume = video.volume;
-    mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+    // let deltaVolume = mvObject.volume + 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+    let deltaVolume = delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate);
+    // console.log("VOL - deltaVolume ", deltaVolume)
+    // console.log("VOL - mvObject.volume ", mvObject.volume)
+    // console.log("VOL - deltaVolume + mvObject.volume ", deltaVolume + mvObject.volume)
+    if (delta < 0  && deltaVolume + mvObject.volume >= 1 ) {
+      mvObject.volume = 1;
+    } 
+    else if (delta > 0  && deltaVolume + mvObject.volume <= 0 ) {
+      mvObject.volume = 0;
+    } else {
+      mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+    }
+    // console.log("VOL - mvObject.volume=", mvObject.volume)
+    console.log("VOL - parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2))=",parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)) )
+    // mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
     video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
   }
 
@@ -184,8 +207,9 @@ function run() {
       if (e.shiftKey) {
         setBrightness(delta, vid);
       } else {
+        console.log("mvObject.mode: ", mvObject.mode)
 
-        // Change Volume
+        // Change time position
         if (mvObject.mode === "mode_seek_middle") {          
           vid.currentTime += getIncrement(delta, mvObject.middle);
 
@@ -222,9 +246,14 @@ function run() {
     Otherwise document.mv_popup_element will change when scrolling too fast */
     if (!document.mv_pause_function && !e.target.mv_on) {
       for (const vid of document.querySelectorAll("video")) {
-        
+        if (vid.clientWidth < 250) {
+          console.log("video too small")
+          e.target.mv_on = true;
+          return
+        }
         console.log("Found vid: title: ", vid.title , " - src: ", vid.src, " - id: ", vid.id)
-        console.log("Found vid: vid.().y: ", vid.getBoundingClientRect().y , " - vid.().z: ", vid.getBoundingClientRect().y)
+        console.log("Found vid: vid.().x: ", vid.getBoundingClientRect().x , " - vid.().y: ", vid.getBoundingClientRect().y)
+        console.log("Found vid: vid.height: ", vid.clientHeight , " - vid.weidth: ", vid.clientWidth)
         if (
           !vid.paused &&
           e.clientY >= vid.getBoundingClientRect().y &&
@@ -234,6 +263,7 @@ function run() {
           (e.target.clientHeight === vid.clientHeight ||
             e.target.clientWidth === vid.clientWidth)
         ) {
+          console.log("In the if statment")
           e.preventDefault();
 
           document.mv_popup_element = vid;

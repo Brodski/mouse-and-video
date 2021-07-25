@@ -7,3 +7,66 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+label {
+  font-size: 16px;
+}
+
+input {
+  font-size: 16px;
+}
+
+legend {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hint_icon {
+  display: inline-flex;
+  width: 30px;
+  cursor: pointer;
+}
+
+.modal-like.visible {
+  display: block;
+  position: absolute;
+  background: #8181819e; 
+  height: 100%;
+  width: 100%;
+}
+
+.modal-like.visible img {
+  width: 100%;
+}
+
+.modal-middle {
+  position: relative;
+  padding: 5%;
+  top: 0%;
+  left: 50%;
+  transform: translateX(-50%);
+
+}
+
+.modal-like {
+  display: none;
+}
+
+.modal-like img {
+  display: none;
+}
+
+img.visible {
+  display: inline;
+}
+
+.close {  
+  right: 7%;
+  top: 10%;
+  position: absolute;
+  font-size: 21px;
+  font-weight: 900;
+  text-align: right;
+  color: #ff7f50;
+  cursor: pointer;
+}
