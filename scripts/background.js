@@ -69,11 +69,15 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   // Aqui vamos verificar se a extensão deve ser desativada neste site.
   // Se o usuário desativou então o domain fica guardado.
   // Here we will check if the extension should be disabled on this website. ... If the user has deactivated then the domain is saved.
+
   const domain = sender.tab.url.match(
     /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im
   )[0];
   chrome.storage.local.get(domain, function (info) {
     // Se não tiver nada então não desativou
+    // If there's nothing then it hasn't deactivated
+    console.log("background storage ", info)
+    console.log("background storage Object.keys(info)", Object.keys(info))
     if (Object.keys(info).length === 0) {
       chrome.tabs.sendMessage(sender.tab.id, {
         run: true,
@@ -94,8 +98,11 @@ chrome.pageAction.onClicked.addListener(function (tab) {
   console.log("domain")
   console.log(domain)
   //https://stackoverflow.com/questions/5364062/how-can-i-save-information-locally-in-my-chrome-extension
+
+
   chrome.storage.local.get(domain, function (info) {
     // call back function. info = returned data fromn key "domain"
+    console.log("something at local storage ???")
     if (Object.keys(info).length > 0) {
       chrome.storage.local.remove(domain);
       chrome.tabs.sendMessage(tab.id, {
@@ -114,6 +121,8 @@ chrome.pageAction.onClicked.addListener(function (tab) {
       setIcon("disabled", tab.id);
     }
   });
+
+
 });
 
 function setIcon(status, id) {

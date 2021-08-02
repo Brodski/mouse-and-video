@@ -8,18 +8,19 @@ const observer = new MutationObserver(function (mutationList, observer) {
     console.log("MUTATION ----------- Found video, sending 'showicon'")
     console.log(mutationList)
     console.log(observer)
-    observer.disconnect();
+    // observer.disconnect();
   }
 });
-const config = { attributes: true, childList: true, subtree: true };
-observer.observe(document, config);
+// const config = { attributes: true, childList: true, subtree: true };
+const config = { attributes: false, childList: true, subtree: true };
+// observer.observe(document, config);
 
 
 window.addEventListener(
   "message",
   (e) => {
-    console.log('recieved some message e', e)
-    console.log('recieved some message e.data', e.data)
+    // console.log('recieved some message e', e)
+    // console.log('recieved some message e.data', e.data)
     if (e.data.mv_topIframe) {
       // Tell the top window which iframe to move
       window.top.postMessage({ mv_iframeSrc: window.location.href }, "*");
@@ -55,6 +56,7 @@ window.addEventListener(
 /////////////////////////////////////////////////////////////////////////////////////////
 /* Receive messages from background script */
 chrome.runtime.onMessage.addListener(function (message) {
+  console.log("(message) found: ", message)
   if (message.run) {
     run();
   } else if (message.disabled) {
@@ -73,7 +75,7 @@ chrome.storage.local.get(function (options) {
     right:      options.right         || 10,
     mode:       options.mode          || "mode_everything",
     // pip:        options.pip           || true,
-    newTab:     options.newTab        || false,
+    // newTab:     options.newTab        || false, // does nothing
     volumeRate: options.volumeRate    || 6,
     brightness: 1,
     volume:     0,
@@ -110,7 +112,9 @@ function getTopIframe(win) {
 // Update values if user changes them in the options
 chrome.storage.onChanged.addListener(function (changes) {
   console.log("something happend")
-  console.log(changes)
+  console.log("changes", changes)
+  console.log("Object.keys(changes)", Object.keys(changes))
+  console.log("changes[Object.keys(changes)[0]] ", changes[Object.keys(changes)[0]] )
   mvObject[Object.keys(changes)[0]] = changes[Object.keys(changes)[0]].newValue;
 });
 
@@ -121,74 +125,6 @@ chrome.storage.onChanged.addListener(function (changes) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 function run() {
   console.log("!!! IN RUN !!!")
-  function changeVolume(delta, video) {
-    if (video.muted) {
-      video.muted = false;
-      video.volume = 0;
-    }
-    // console.log("VOL - delta ", delta)
-    // console.log("VOL - video.volume ", video.volume)
-    // console.log("VOL - mvObject.volumeRate ",  mvObject.volumeRate)
-    // console.log("VOL - volume change: ", 1 * (0.01 * mvObject.volumeRate))
-    
-    mvObject.volume = video.volume;
-    // let deltaVolume = mvObject.volume + 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
-    let deltaVolume = delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate);
-    // console.log("VOL - deltaVolume ", deltaVolume)
-    // console.log("VOL - mvObject.volume ", mvObject.volume)
-    // console.log("VOL - deltaVolume + mvObject.volume ", deltaVolume + mvObject.volume)
-    if (delta < 0  && deltaVolume + mvObject.volume >= 1 ) {
-      mvObject.volume = 1;
-    } 
-    else if (delta > 0  && deltaVolume + mvObject.volume <= 0 ) {
-      mvObject.volume = 0;
-    } else {
-      mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
-    }
-    // console.log("VOL - mvObject.volume=", mvObject.volume)
-    console.log("VOL - parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2))=",parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)) )
-    // mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
-    video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
-  }
-
-  let firstMov;
-  function changePlaybackRate(delta, video) {
-    firstMov = delta;
-    setTimeout(
-      function (mov) {
-        if (firstMov !== mov) {
-          video.playbackRate = video.defaultPlaybackRate;
-        }
-      },
-      150,
-      firstMov
-    );
-    video.playbackRate += 1 * (delta < 0 ? 1 * 0.25 : -1 * 0.25);
-    video.playbackRate = parseFloat( Math.min(Math.max(video.playbackRate, 0.25), 4).toFixed(2) );
-  }
-
-  let seekTo;
-  function seekVideoByAreas(cX, delta, video) {
-    seekTo = video.currentTime;
-    if (cX <= video.clientWidth / 3) {
-      seekTo += getIncrement(delta, mvObject.left);
-    } else if ( cX > video.clientWidth / 3 && cX <= (video.clientWidth / 3) * 2 ) {
-      seekTo += getIncrement(delta, mvObject.middle);
-    } else {
-      seekTo += getIncrement(delta, mvObject.right);
-    }
-    if (isNetflix) {
-      document.dispatchEvent(
-        new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 })
-      ); // milliseconds
-    } else {
-      video.currentTime = seekTo;
-    }
-  }
-
-  function getIncrement(delta, mArea) {
-    return 1 * (delta < 0 ? 1 * mArea : -1 * mArea);
-  }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
@@ -197,49 +133,51 @@ function run() {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 
-  function wheel(e, vid) {
-    if (!document.mv_pause_function) {
-      e.preventDefault();
+ 
 
-      const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
-      const delta = e.deltaY;
 
-      if (e.shiftKey) {
-        setBrightness(delta, vid);
-      } else {
-        console.log("mvObject.mode: ", mvObject.mode)
 
-        // Change time position
-        if (mvObject.mode === "mode_seek_middle") {          
-          vid.currentTime += getIncrement(delta, mvObject.middle);
 
-        // Advance skip
-        } else if (mvObject.mode === "mode_seek_all") {          
-          seekVideoByAreas(cX, delta, vid);
 
-        // Change volume
-        } else if (mvObject.mode === "mode_volume") {
-          changeVolume(delta, vid);
 
-        // Everything 
-        } else {
-          if (e.offsetY <= vid.clientHeight / 2) {
-            if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {
-              controlPopoutEvent({delta, vid, e});
-              // activateFullScreenPopupFeature(delta, vid, e);
 
-            } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {
-              changePlaybackRate(delta, vid);
-            } else {
-              changeVolume(delta, vid);
-            }
-          } else {
-            seekVideoByAreas(cX, delta, vid);
-          }
-        }
-      }
-    }
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup.
@@ -294,7 +232,9 @@ function run() {
       }
     }
   }
-  document.onwheel = main;
+  
+console.log('--- XX2XX2 run --- ')
+  // document.onwheel = main; // function run() 122
 }
 
 
@@ -304,6 +244,252 @@ function run() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+console.log('++++--- EXTENSION LOADED EVENT  --- ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
+main2()
+  
+function main2() {
+  /* document.mv_pause_main is useful when transitioning to the popup.
+  Otherwise document.mv_popup_element will change when scrolling too fast */
+  console.log('main2')
+  console.log("querying for vids")
+  console.log(document.querySelectorAll("video"))
+
+  document.addEventListener("mouseover", e => {
+      // console.log("hovered e.target", e.target)
+      // console.log("hovered e.target.tagName", e.target.tagName)
+      if (e.target.tagName == "video") {
+        console.log("--> THIS IS A VIDEO ")
+        console.log("--> THIS IS A VIDEO ")
+        console.log("--> THIS IS A VIDEO ")
+        console.log("--> THIS IS A VIDEO ")
+        console.log("--> e.target.isMVAdded ", e.target.isMVAdded)
+        if (e.target.tagName.isMVAdded) {
+          console.log("--> it has it")
+          console.log("--> it has it")
+          console.log("--> it has it")
+          console.log("--> it has it")
+          console.log("--> it has it")
+          console.log("--> it has it")
+          console.log("--> it has it")
+          console.log("--> it has it")
+        }
+      }
+  });
+    for (const vid of document.querySelectorAll("video")) {
+      console.log("found vid", vid)
+      // if (vid.clientWidth < 250) {
+      if (vid.scrollWidth < 250) {
+        console.log("video too small")
+        console.log("video too small,", vid)
+        vid.isMVAdded = true;
+        return
+      }
+      if (vid.isMVAdded == true) {
+        console.log("retnring")
+        return
+      }
+      console.log("should be adding evetne listners")
+      vid.addEventListener("wheel", e => {
+        wheel(e, vid)
+      });
+      // vid.addEventListener("mouseover", e => {
+      //   console.log("hovered e.target", e.target)
+      // });
+      
+      
+      console.log(" @ NEW - vid: title: ", vid.title , " - src: ", vid.src, " - id: ", vid.id)
+      console.log(" @ NEW -  vid: vid.().x: ", vid.getBoundingClientRect().x , " - vid.().y: ", vid.getBoundingClientRect().y)
+      console.log(" @ NEW -  vid: vid.height: ", vid.clientHeight , " - vid.weidth: ", vid.clientWidth)
+
+      document.mv_popup_element = vid;
+      document.pvwm = vid;
+      vid.isMVAdded = true;
+
+      /* This will be used to know where to place the element when the popup closes. 'hasPlaceholder' is used so that a new 'div' won't be created when the video is in the popup. */
+      if (!vid.hasPlaceholder) {
+        vid.hasPlaceholder = true;
+        document.mv_placeholder = document.createElement("div");
+        document.mv_popup_element.parentNode.insertBefore(document.mv_placeholder, document.mv_popup_element);
+      }
+  }
+}
+
+function wheel(e, vid) {
+  if (!document.mv_pause_function) {
+    console.log("WHEEL EVENT")
+    console.log(e)
+    e.preventDefault();
+    // console.log("WHEEL EVENT2")
+    // console.log(e.clientX )
+    // console.log(Math.round(vid.getBoundingClientRect().x ))
+
+    const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
+    const delta = e.deltaY;
+    // console.log("CX & delta", cx, delta)
+
+    if (e.shiftKey) {
+      setBrightness(delta, vid);
+      return
+    } 
+
+    console.log("MODE: ", mvObject.mode)
+
+    // Change time position
+    if (mvObject.mode === "mode_seek_middle") {          
+      vid.currentTime += getIncrement(delta, mvObject.middle);
+
+    // Skip only
+    } else if (mvObject.mode === "mode_seek_only") {          
+      seekVideoByAreas(cX, delta, vid);
+
+    // Volume only
+    } else if (mvObject.mode === "mode_volume") {
+      changeVolume(delta, vid);
+
+    // Everything 
+    } else { // mvObject.mode ===  mode_everything
+
+      // bottom half
+      if (e.offsetY <= vid.clientHeight / 2) {
+        if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {
+          controlPopoutEvent({delta, vid, e});
+          // activateFullScreenPopupFeature(delta, vid, e);
+
+        } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {
+          changePlaybackRate(delta, vid);
+        } else {
+          changeVolume(delta, vid);
+        }
+
+      // top half
+      } 
+      else { 
+        seekVideoByAreas(cX, delta, vid);
+      }
+    }
+  }
+  
+}
+
+
+
+function changeVolume(delta, video) {
+  if (video.muted) {
+    video.muted = false;
+    video.volume = 0;
+  }
+  // console.log("VOL - delta ", delta)
+  // console.log("VOL - video.volume ", video.volume)
+  // console.log("VOL - mvObject.volumeRate ",  mvObject.volumeRate)
+  // console.log("VOL - volume change: ", 1 * (0.01 * mvObject.volumeRate))
+  
+  mvObject.volume = video.volume;
+  // let deltaVolume = mvObject.volume + 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+  let deltaVolume = delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate);
+  // console.log("VOL - deltaVolume ", deltaVolume)
+  // console.log("VOL - mvObject.volume ", mvObject.volume)
+  // console.log("VOL - deltaVolume + mvObject.volume ", deltaVolume + mvObject.volume)
+  if (delta < 0  && deltaVolume + mvObject.volume >= 1 ) {
+    mvObject.volume = 1;
+  } 
+  else if (delta > 0  && deltaVolume + mvObject.volume <= 0 ) {
+    mvObject.volume = 0;
+  } else {
+    mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+  }
+  // console.log("VOL - mvObject.volume=", mvObject.volume)
+  console.log("VOL - parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2))=",parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)) )
+  // mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+  video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
+}
+
+let firstMov;
+function changePlaybackRate(delta, video) {
+  firstMov = delta;
+  setTimeout(
+    function (mov) {
+      if (firstMov !== mov) {
+        video.playbackRate = video.defaultPlaybackRate;
+      }
+    },
+    150,
+    firstMov
+  );
+  video.playbackRate += 1 * (delta < 0 ? 1 * 0.25 : -1 * 0.25);
+  video.playbackRate = parseFloat( Math.min(Math.max(video.playbackRate, 0.25), 4).toFixed(2) );
+}
+
+let seekTo;
+function seekVideoByAreas(cX, delta, video) {
+  seekTo = video.currentTime;
+  if (cX <= video.clientWidth / 3) {
+    seekTo += getIncrement(delta, mvObject.left);
+  } else if ( cX > video.clientWidth / 3 && cX <= (video.clientWidth / 3) * 2 ) {
+    seekTo += getIncrement(delta, mvObject.middle);
+  } else {
+    seekTo += getIncrement(delta, mvObject.right);
+  }
+  if (isNetflix) {
+    document.dispatchEvent(
+      new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 })
+    ); // milliseconds
+  } else {
+    video.currentTime = seekTo;
+  }
+}
+
+function getIncrement(delta, mArea) {
+  return 1 * (delta < 0 ? 1 * mArea : -1 * mArea);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Junk
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Shitty pop up
 // Shitty pop up
@@ -399,21 +585,8 @@ function open_popup() {
     }
   }
 }
-// }
 
-
-
-
-
-
-
-// Junk
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+ 
 function setBrightness(delta, vid) {
   mvObject.brightness += 1 * (delta < 0 ? 1 * 0.1 : -1 * 0.1);
   mvObject.brightness = parseFloat(

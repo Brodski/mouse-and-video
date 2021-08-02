@@ -1,6 +1,7 @@
 window.onload = function () {
   console.log("loaded")
   function saveChanges(option, value) {
+    console.log("Why saved called")
     chrome.storage.local.set({
       [option]: value,
     });
@@ -19,7 +20,6 @@ window.onload = function () {
   const volumeRateInputLabel = document.querySelector("label[for=volumeRate]");
   const modeLegend = document.querySelector("#mode");
   
-  modeLegend.textContent = chrome.i18n.getMessage("mode_title");
 
   // document.querySelector("#mode_seek_middle").textContent = chrome.i18n.getMessage("vonly");
   // document.querySelector("#mode_volume").textContent = chrome.i18n.getMessage("ponly");
@@ -33,6 +33,7 @@ window.onload = function () {
 
   
 
+  modeLegend.textContent = chrome.i18n.getMessage("mode_title");
   popoutLegend.textContent = chrome.i18n.getMessage("pop_out_video");
   pipLegend.textContent = chrome.i18n.getMessage("pip");
   // pipLegend.textContent = "hello";
@@ -47,20 +48,20 @@ window.onload = function () {
   volumeRateInputLabel.textContent = chrome.i18n.getMessage("volumeRate");
 
   // no longer needed??? no longer have checkboxes
-  for (const input of document.querySelectorAll("input")) {
-    input.addEventListener("blur", (e) => {
-      let value = e.target.value;
-      if (e.target.type == "checkbox") value = e.target.checked;
-      saveChanges(e.target.name, value);
-    });
-  }
+  // for (const input of document.querySelectorAll("input")) {
+  //   input.addEventListener("blur", (e) => {
+  //     let value = e.target.value;
+  //     if (e.target.type == "checkbox") value = e.target.checked;
+  //     saveChanges(e.target.name, value);
+  //   });
+  // }
 
   chrome.storage.local.get(function (options) {
     console.log("Got something in options sotrage")
     console.log(options)
     if (options.mode === undefined) options.mode = "mode_everything";
-    if (options.pip === undefined) options.pip = true;
-    if (options.newTab === undefined) options.newTab = false;
+    if (options.pip === undefined) options.pip = false; // does nothing?
+    if (options.newTab === undefined) options.newTab = false; // does nothing ?
     if (options.popoutSetting === undefined) options.popoutSetting = "disable";
 
     document.querySelector("[name='left'").value = options.left || 5;
