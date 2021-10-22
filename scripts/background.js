@@ -3,7 +3,8 @@ let previousTabIndex;
 let popups = {};
 
 browser.tabs.onActivated.addListener((info) => {
-  console.log("activated!")
+  console.log("background - activated!")
+  console.log(info)
   browser.windows.get(info.windowId).then((window) => {
     if (window.type !== "popup") {
       browser.tabs.get(info.previousTabId).then((tab) => {
@@ -13,16 +14,10 @@ browser.tabs.onActivated.addListener((info) => {
   });
 });
 
-chrome.runtime.onMessage.addListener(function (message, sender) {
-  console.log("Some message - some sender")
-  console.log(message)
-  console.log(sender)
-  console.log(" --- ")
-  if (message.showIcon) {
-    chrome.pageAction.show(sender.tab.id);
-  } 
-  else if (message.popup) {
+function handlePopUp(message) {
+  console.log("background - in pop up")
     if (message.acao === "criar") { // message.action === create
+      console.log("background - in create")
       browser.tabs.highlight({
         windowId: sender.tab.windowId,
         tabs: [previousTabIndex],
@@ -47,6 +42,7 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
         });
     } 
     else if (message.acao === "fechar") { // message.action === close
+      console.log("background - in close")
       browser.windows.getCurrent().then((winInfo) => {
         // Move back to main window
         browser.tabs
@@ -64,20 +60,28 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
           });
       });
     }
+}
+
+chrome.runtime.onMessage.addListener(function (message, sender) {
+  console.log("background ---- ")
+  console.log("background - Some message - some sender")
+  console.log(message)
+  console.log(sender)
+  if (message.showIcon) {
+    chrome.pageAction.show(sender.tab.id);
+  } 
+  else if (message.popup) {
+    handlePopUp(message)
   }
 
-  // Aqui vamos verificar se a extensão deve ser desativada neste site.
-  // Se o usuário desativou então o domain fica guardado.
+  // Aqui vamos verificar se a extensão deve ser desativada neste site. // Se o usuário desativou então o domain fica guardado.
   // Here we will check if the extension should be disabled on this website. ... If the user has deactivated then the domain is saved.
-
-  const domain = sender.tab.url.match(
-    /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im
-  )[0];
+  const domain = sender.tab.url.match( /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im )[0];
   chrome.storage.local.get(domain, function (info) {
     // Se não tiver nada então não desativou
     // If there's nothing then it hasn't deactivated
-    console.log("background storage ", info)
-    console.log("background storage Object.keys(info)", Object.keys(info))
+    console.log("background - background storage ", info)
+    console.log("background - background storage Object.keys(info)", Object.keys(info))
     if (Object.keys(info).length === 0) {
       chrome.tabs.sendMessage(sender.tab.id, {
         run: true,
@@ -91,18 +95,18 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
 chrome.pageAction.onClicked.addListener(function (tab) {
   // This event will not fire if the page action has a popup.
   // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/pageAction/onClicked
-  console.log("clicked on pageAction!")
+  console.log("background - clicked on pageAction!")
   const domain = tab.url.match(
     /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im
   )[0];
-  console.log("domain")
+  console.log("background - domain")
   console.log(domain)
   //https://stackoverflow.com/questions/5364062/how-can-i-save-information-locally-in-my-chrome-extension
 
 
   chrome.storage.local.get(domain, function (info) {
     // call back function. info = returned data fromn key "domain"
-    console.log("something at local storage ???")
+    console.log("background - something at local storage ???")
     if (Object.keys(info).length > 0) {
       chrome.storage.local.remove(domain);
       chrome.tabs.sendMessage(tab.id, {

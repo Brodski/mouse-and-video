@@ -1,19 +1,25 @@
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
+
+
+console.log('++++--- EXTENSION LOADED EVENT  --- ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
+// main2()
+
+
 const observer = new MutationObserver(function (mutationList, observer) {
   if (document.querySelector("video")) {
     chrome.runtime.sendMessage({
       showIcon: true,
     });
-    console.log("MUTATION ----------- Found video, sending 'showicon'")
+    console.log("MUTATION ----------- Found video, sending ")
     console.log(mutationList)
     console.log(observer)
-    // observer.disconnect();
+    observer.disconnect();
   }
 });
 // const config = { attributes: true, childList: true, subtree: true };
 const config = { attributes: false, childList: true, subtree: true };
-// observer.observe(document, config);
+observer.observe(document, config);
 
 
 window.addEventListener(
@@ -118,6 +124,109 @@ chrome.storage.onChanged.addListener(function (changes) {
   mvObject[Object.keys(changes)[0]] = changes[Object.keys(changes)[0]].newValue;
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener('click', event => {
+  console.log("Click", event)
+  console.log("Click detail:" + event.detail)
+  console.log("Click target:" + event.target)
+  console.log(event.target)
+  console.log("Click offsetleft:" + event.target.offsetLeft)
+  console.log("Click offsetHeight:" + event.target.offsetHeight)
+  console.log("Click button:" + event.button)
+  // vidz[0].parentElement.querySelectorAll("video")
+});
+
+function getAllSiblings(ele) {
+  console.log("================>IN EHREEEEEEE")
+  let siblings = [ele]
+  let tempEle = ele
+  
+  while (tempEle.previousSibling) {
+    siblings.push(tempEle.previousSibling)
+    tempEle = tempEle.previousSibling
+  }
+  tempEle = ele
+  while (tempEle.nextSibling) {
+    siblings.push(tempEle.nextSibling)
+    tempEle = tempEle.nextSibling
+  }
+  return siblings
+}
+
+
+function getPotentialVidsWrapperParent(vid, ancestor) {
+  console.log("bam! ancestor")
+  console.log(ancestor)
+  if (vid.clientWidth < 250) {
+    console.log("video too small")
+    // e.target.mv_on = true;
+    return false
+  }
+  console.log("================ > IN")
+  let allWrappingEles = getAllSiblings(ancestor)
+  console.log("================ > OUT")
+  console.log(allWrappingEles)
+  console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+  console.log("vid.width=" + vid.getBoundingClientRect().width )
+  console.log("vid.height="+ vid.getBoundingClientRect().height)  
+  console.log("vid.offsetLeft=" + vid.offsetLeft )
+  console.log("vid.offsetHeight="+ vid.offsetHeight )  
+  console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+  for ( let ele of allWrappingEles) {
+    console.log(ele)
+    console.log("ele.width=" + ele.getBoundingClientRect().width )
+    console.log("ele.height="+ ele.getBoundingClientRect().height)  
+    console.log("ele.offsetLeft=" + ele.offsetLeft )
+    console.log("ele.offsetHeight="+ ele.offsetHeight )  
+    if (vid.getBoundingClientRect().width == ele.getBoundingClientRect().width  
+      && vid.getBoundingClientRect().height == ele.getBoundingClientRect().height
+      && vid.offsetLeft == ele.offsetLeft
+      && vid.offsetHeight == ele.offsetHeight)  {
+        ancestor.candidates ? ancestor.candidates.push(vid) :  ancestor.candidates = [vid]
+        ele.videoReference = vid
+        console.log(" ✔✔✔✔✔ Adding candidate")
+        console.log(ancestor.candidates)
+    } else {
+      console.log(" X X X X NOT adding candidate")
+    }
+  }
+  console.log("-----------------------------------------------ele.candidates")
+  console.log(ancestor.candidates)
+
+
+}
+
+function getShit() {
+  console.log("Getting shit")
+  let i = 0;
+  // .previousSibling
+  // .previousSibling
+  // .previousSibling
+  // .previousSibling
+  for (const vid of document.querySelectorAll("video")) {
+    console.log("---- ", i, " ----")
+    console.log("vid: ", vid)
+    let isPotential = getPotentialVidsWrapperParent(vid, vid.parentElement )
+    i++
+  }
+}
+
+
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
@@ -125,91 +234,66 @@ chrome.storage.onChanged.addListener(function (changes) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 function run() {
   console.log("!!! IN RUN !!!")
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  console.log('--- XX2XX2 run --- ')
+  getShit() 
+  console.log("DONE")
+  document.onwheel = main; 
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup.
     Otherwise document.mv_popup_element will change when scrolling too fast */
+    console.log("-------> MAIN! aka document.WHEEL!< -----------")
+    console.log(e)
+    console.log(e.target)
+    console.log(e.target.videoReference)
+    // HERE
+    if (e.videoReference) {
+
+    }
+    console.log("mv_pasue" ,document.mv_pause_function)  
+    console.log("target.mv_on" , e.target.mv_on)  
     if (!document.mv_pause_function && !e.target.mv_on) {
+      console.log("HERE WE GOOOOOOOOOOOOOO")
       for (const vid of document.querySelectorAll("video")) {
         if (vid.clientWidth < 250) {
           console.log("video too small")
-          e.target.mv_on = true;
-          return
+          // e.target.mv_on = true;
+          continue
         }
         console.log("Found vid: title: ", vid.title , " - src: ", vid.src, " - id: ", vid.id)
-        console.log("Found vid: vid.().x: ", vid.getBoundingClientRect().x , " - vid.().y: ", vid.getBoundingClientRect().y)
-        console.log("Found vid: vid.height: ", vid.clientHeight , " - vid.weidth: ", vid.clientWidth)
+        console.log("Found vid: vid.getBoundingClientRect x,y: ", vid.getBoundingClientRect().x , vid.getBoundingClientRect().y)
+        console.log("Found vid: vid.clientHeight, clientWidth: ", vid.clientHeight ,  vid.clientWidth)
+        console.log("Found vid: e.clientX, e.clientY ", e.clientX ,  e.clientY)
+        console.log("Found vid: -------> candidate ", e.target.candidates)
+        for ( let ele of e.target.candidates) {
+            if (e.target == ele) {
+              console.log("....... BAM FOUND!")
+              console.log(e.target)
+              console.log(ele)
+            } else {
+              console.log("...... NOTHING")
+              console.log(e.target)
+              console.log(ele)
+
+            }
+        }
         if (
-          !vid.paused &&
-          e.clientY >= vid.getBoundingClientRect().y &&
-          e.clientY <= vid.getBoundingClientRect().y + vid.clientHeight &&
-          e.clientX >= vid.getBoundingClientRect().x &&
-          e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth &&
-          (e.target.clientHeight === vid.clientHeight ||
-            e.target.clientWidth === vid.clientWidth)
+          // !vid.paused &&
+          e.clientY >= vid.getBoundingClientRect().y 
+          && e.clientY <= vid.getBoundingClientRect().y + vid.clientHeight 
+          && e.clientX >= vid.getBoundingClientRect().x 
+          && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
+          // && (e.target.clientHeight === vid.clientHeight || e.target.clientWidth === vid.clientWidth)
         ) {
-          console.log("In the if statment")
+          console.log("In the big IF statment")
           e.preventDefault();
+          console.log("e")
+          console.log(e.target)
+          console.log(e.onwheel)
 
           document.mv_popup_element = vid;
 
           /* ********* Popup info START ********* */
-          /* This will be used to know where to place the element
-          when the popup closes. 'hasPlaceholder' is used so that
-          a new 'div' won't be created when the video is in the popup. */
+          /* This will be used to know where to place the element when the popup closes. 'hasPlaceholder' is used so that a new 'div' won't be created when the video is in the popup. */
           if (!vid.hasPlaceholder) {
             vid.hasPlaceholder = true;
             document.mv_placeholder = document.createElement("div");
@@ -218,13 +302,17 @@ function run() {
               document.mv_popup_element
             );
           }
-
           /* ********* Popup info END ********* */
 
-          /* This is a flag to skip this video because
-          we already atached the wheel function to it */
+          /* This is a flag to skip this video because we already atached the wheel function to it */
+          // document.mouse_wheel_vids = document.mouse_wheel_vids ? [vid]
+          // e.target.videoReference = vid
+          
           e.target.mv_on = true;
-
+          console.log("going into wheel 1")
+          console.log(e)
+          console.log(e.target)
+          console.log(e.target.onwheel)
           e.target.onwheel = (e) => wheel(e, vid);
           document.pvwm = e.target;
           break;
@@ -232,9 +320,7 @@ function run() {
       }
     }
   }
-  
-console.log('--- XX2XX2 run --- ')
-  // document.onwheel = main; // function run() 122
+   
 }
 
 
@@ -268,82 +354,89 @@ console.log('--- XX2XX2 run --- ')
 
 
 
-console.log('++++--- EXTENSION LOADED EVENT  --- ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
-main2()
+
+// function addCoolVideoEvents(vid) {
+//   vid.addEventListener("wheel", e => {
+//     console.log("WHEEEEEEEEEEEEEL")
+//     console.log(e)
+//     wheel(e, vid)
+//   })
+// }
   
-function main2() {
-  /* document.mv_pause_main is useful when transitioning to the popup.
-  Otherwise document.mv_popup_element will change when scrolling too fast */
-  console.log('main2')
-  console.log("querying for vids")
-  console.log(document.querySelectorAll("video"))
+// function main2() {
+//   /* document.mv_pause_main is useful when transitioning to the popup.
+//   Otherwise document.mv_popup_element will change when scrolling too fast */
+//   console.log('main2')
+//   console.log("querying for vids")
+//   console.log(document.querySelectorAll("video"))
 
-  document.addEventListener("mouseover", e => {
-      // console.log("hovered e.target", e.target)
-      // console.log("hovered e.target.tagName", e.target.tagName)
-      if (e.target.tagName == "video") {
-        console.log("--> THIS IS A VIDEO ")
-        console.log("--> THIS IS A VIDEO ")
-        console.log("--> THIS IS A VIDEO ")
-        console.log("--> THIS IS A VIDEO ")
-        console.log("--> e.target.isMVAdded ", e.target.isMVAdded)
-        if (e.target.tagName.isMVAdded) {
-          console.log("--> it has it")
-          console.log("--> it has it")
-          console.log("--> it has it")
-          console.log("--> it has it")
-          console.log("--> it has it")
-          console.log("--> it has it")
-          console.log("--> it has it")
-          console.log("--> it has it")
-        }
-      }
-  });
-    for (const vid of document.querySelectorAll("video")) {
-      console.log("found vid", vid)
-      // if (vid.clientWidth < 250) {
-      if (vid.scrollWidth < 250) {
-        console.log("video too small")
-        console.log("video too small,", vid)
-        vid.isMVAdded = true;
-        return
-      }
-      if (vid.isMVAdded == true) {
-        console.log("retnring")
-        return
-      }
-      console.log("should be adding evetne listners")
-      vid.addEventListener("wheel", e => {
-        wheel(e, vid)
-      });
-      // vid.addEventListener("mouseover", e => {
-      //   console.log("hovered e.target", e.target)
-      // });
+//   document.addEventListener("mouseover", e => {
+//       // console.log("hovered e.target", e.target)
+//       console.log("hovered e.target.tageName", e.target.tagName, " - ", e.target.tagName=="VIDEO")
+//       // console.log("hovered e.target", e.target)
+//       console.log("hovered e.target", e.target.querySelectorAll("video"))
+//       if (e.target.tagName.toLowerCase() == "video") {
+//         console.log("--> THIS IS A VIDEO ")
+//         console.log("--> e.target.isMVAdded ", e.target.isMVAdded)
+//         if (e.target.tagName.isMVAdded) {
+//           console.log("--> it has it")
+//         } 
+//         else if (!e.target.tagName.isMVAdded) {
+//           console.log("adding DANK e lsitersner")
+//           addCoolVideoEvents(e.target)
+//         }
+//       }
+//   }, true);
+//     for (const vid of document.querySelectorAll("video")) {
+//       console.log("found vid", vid)
+//       console.log("found clientWidth", vid.clientWidth)
+//       console.log("found scrollWidth", vid.scrollWidth)
+//       console.log("found offsetWidth", vid.offsetWidth)
+//       console.log("found videoWidth", vid.videoWidth)
+//       // if (vid.clientWidth < 250) {
+//       if (vid.scrollWidth < 250) {
+//         console.log("video too small")
+//         console.log("video too small,", vid)
+//         vid.isMVAdded = true;
+//         return
+//       }
+//       if (vid.isMVAdded == true) {
+//         console.log("retnring")
+//         return
+//       }
+//       console.log("should be adding evetne listners")
+//       vid.addEventListener("wheel", e => {
+//         console.log("WHEEEEEEEEEEEEEL")
+//         wheel(e, vid)
+//       });
+//       // vid.addEventListener("mouseover", e => {
+//       //   console.log("hovered e.target", e.target)
+//       // });
       
       
-      console.log(" @ NEW - vid: title: ", vid.title , " - src: ", vid.src, " - id: ", vid.id)
-      console.log(" @ NEW -  vid: vid.().x: ", vid.getBoundingClientRect().x , " - vid.().y: ", vid.getBoundingClientRect().y)
-      console.log(" @ NEW -  vid: vid.height: ", vid.clientHeight , " - vid.weidth: ", vid.clientWidth)
+//       console.log(" @ NEW - vid: title: ", vid.title , " - src: ", vid.src, " - id: ", vid.id)
+//       console.log(" @ NEW -  vid: vid.().x: ", vid.getBoundingClientRect().x , " - vid.().y: ", vid.getBoundingClientRect().y)
+//       console.log(" @ NEW -  vid: vid.height: ", vid.clientHeight , " - vid.weidth: ", vid.clientWidth)
 
-      document.mv_popup_element = vid;
-      document.pvwm = vid;
-      vid.isMVAdded = true;
+//       document.mv_popup_element = vid;
+//       // document.pvwm = vid; HERE wtf this does nothing
+//       vid.isMVAdded = true;
 
-      /* This will be used to know where to place the element when the popup closes. 'hasPlaceholder' is used so that a new 'div' won't be created when the video is in the popup. */
-      if (!vid.hasPlaceholder) {
-        vid.hasPlaceholder = true;
-        document.mv_placeholder = document.createElement("div");
-        document.mv_popup_element.parentNode.insertBefore(document.mv_placeholder, document.mv_popup_element);
-      }
-  }
-}
+//       /* This will be used to know where to place the element when the popup closes. 'hasPlaceholder' is used so that a new 'div' won't be created when the video is in the popup. */
+//       if (!vid.hasPlaceholder) {
+//         vid.hasPlaceholder = true;
+//         document.mv_placeholder = document.createElement("div");
+//         document.mv_popup_element.parentNode.insertBefore(document.mv_placeholder, document.mv_popup_element);
+//       }
+//   }
+// }
 
 function wheel(e, vid) {
   if (!document.mv_pause_function) {
     console.log("WHEEL EVENT")
     console.log(e)
+    console.log(e.target)
     e.preventDefault();
-    // console.log("WHEEL EVENT2")
     // console.log(e.clientX )
     // console.log(Math.round(vid.getBoundingClientRect().x ))
 
@@ -402,17 +495,10 @@ function changeVolume(delta, video) {
     video.muted = false;
     video.volume = 0;
   }
-  // console.log("VOL - delta ", delta)
-  // console.log("VOL - video.volume ", video.volume)
-  // console.log("VOL - mvObject.volumeRate ",  mvObject.volumeRate)
-  // console.log("VOL - volume change: ", 1 * (0.01 * mvObject.volumeRate))
   
   mvObject.volume = video.volume;
-  // let deltaVolume = mvObject.volume + 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
   let deltaVolume = delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate);
-  // console.log("VOL - deltaVolume ", deltaVolume)
-  // console.log("VOL - mvObject.volume ", mvObject.volume)
-  // console.log("VOL - deltaVolume + mvObject.volume ", deltaVolume + mvObject.volume)
+
   if (delta < 0  && deltaVolume + mvObject.volume >= 1 ) {
     mvObject.volume = 1;
   } 

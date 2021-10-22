@@ -1,7 +1,9 @@
 window.onload = function () {
-  console.log("loaded")
+  console.log("options.js - loaded")
   function saveChanges(option, value) {
-    console.log("Why saved called")
+    console.log("options.js - Why saved called")
+    console.log("options.js - option", option)
+    console.log("options.js - value", value)
     chrome.storage.local.set({
       [option]: value,
     });
@@ -48,20 +50,21 @@ window.onload = function () {
   volumeRateInputLabel.textContent = chrome.i18n.getMessage("volumeRate");
 
   // no longer needed??? no longer have checkboxes
-  // for (const input of document.querySelectorAll("input")) {
-  //   input.addEventListener("blur", (e) => {
-  //     let value = e.target.value;
-  //     if (e.target.type == "checkbox") value = e.target.checked;
-  //     saveChanges(e.target.name, value);
-  //   });
-  // }
+  for (const input of document.querySelectorAll("input")) {
+    input.addEventListener("blur", (e) => {
+      // let value = e.target.value;
+      let value = e.target.type == "saveChanges" ? e.target.checked : e.target.value;
+      // if (e.target.type == "checkbox") value = e.target.checked;
+      saveChanges(e.target.name, value);
+    });
+  }
 
   chrome.storage.local.get(function (options) {
-    console.log("Got something in options sotrage")
+    console.log("options.js - Got something in options sotrage")
     console.log(options)
     if (options.mode === undefined) options.mode = "mode_everything";
-    if (options.pip === undefined) options.pip = false; // does nothing?
-    if (options.newTab === undefined) options.newTab = false; // does nothing ?
+    // if (options.pip === undefined) options.pip = false; // does nothing?
+    // if (options.newTab === undefined) options.newTab = false; // does nothing ?
     if (options.popoutSetting === undefined) options.popoutSetting = "disable";
 
     document.querySelector("[name='left'").value = options.left || 5;
