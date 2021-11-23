@@ -22,9 +22,7 @@ const config = { attributes: false, childList: true, subtree: true };
 observer.observe(document, config);
 
 
-window.addEventListener(
-  "message",
-  (e) => {
+window.addEventListener( "message", (e) => {
     // console.log('recieved some message e', e)
     // console.log('recieved some message e.data', e.data)
     if (e.data.mv_topIframe) {
@@ -34,6 +32,7 @@ window.addEventListener(
 
     if (window.location === window.parent.location) {
       if (e.data.mv_iframeSrc) {
+        console.log("gonna pop up!")
         document.mv_popup_element = document.querySelector(`iframe[src="${e.data.mv_iframeSrc}"`);
         document.documentElement.style.overflow = "hidden";
         document.mv_popup_element.className += " popup_style";
@@ -51,9 +50,7 @@ window.addEventListener(
         });
       }
     }
-  },
-  false
-);
+});
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -62,7 +59,7 @@ window.addEventListener(
 /////////////////////////////////////////////////////////////////////////////////////////
 /* Receive messages from background script */
 chrome.runtime.onMessage.addListener(function (message) {
-  console.log("(message) found: ", message)
+  console.log("Content Script - MSG FROM BACKGROUND -", message)
   if (message.run) {
     run();
   } else if (message.disabled) {
@@ -86,6 +83,7 @@ chrome.storage.local.get(function (options) {
     brightness: 1,
     volume:     0,
     popoutSetting: options.popoutSetting || "disable",
+    // disable newTab fullscreen  pip
 
     popup: (action, activatePopupTab) => {
       chrome.runtime.sendMessage({
@@ -94,6 +92,11 @@ chrome.storage.local.get(function (options) {
         activatePopupTab: activatePopupTab,
       });
     },
+    popupTabOrFullscreen: () => {
+      chrome.runtime.sendMessage({
+        popoutSetting: options.popoutSetting
+      })
+    }
   };
 });
 
@@ -141,13 +144,13 @@ chrome.storage.onChanged.addListener(function (changes) {
 
 
 document.addEventListener('click', event => {
-  console.log("Click", event)
-  console.log("Click detail:" + event.detail)
-  console.log("Click target:" + event.target)
-  console.log(event.target)
-  console.log("Click offsetleft:" + event.target.offsetLeft)
-  console.log("Click offsetHeight:" + event.target.offsetHeight)
-  console.log("Click button:" + event.button)
+  // console.log("Click", event)
+  // console.log("Click detail:" + event.detail)
+  // console.log("Click target:" + event.target)
+  // console.log(event.target)
+  // console.log("Click offsetleft:" + event.target.offsetLeft)
+  // console.log("Click offsetHeight:" + event.target.offsetHeight)
+  // console.log("Click button:" + event.button)
   // vidz[0].parentElement.querySelectorAll("video")
 });
 
@@ -169,61 +172,53 @@ function getAllSiblings(ele) {
 
 
 function getAllWrapingEles(vid, ancestor) {
-  console.log("bam! ancestor")
-  console.log(ancestor)
   if (vid.clientWidth < 250) {
     console.log("video too small")
     // e.target.mv_on = true;
     return false
   }
-  console.log("================ > IN")
   let allWrappingEles = getAllSiblings(ancestor)
-  console.log("================ > OUT")
-  console.log(allWrappingEles)
-  console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvv")
-  console.log("vid.width=" + vid.getBoundingClientRect().width )
-  console.log("vid.height="+ vid.getBoundingClientRect().height)  
-  console.log("vid.offsetLeft=" + vid.offsetLeft )
-  console.log("vid.offsetHeight="+ vid.offsetHeight )  
-  console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+  // console.log(allWrappingEles)
+  // console.log("==> getAllWrapingEles()")
+  // console.log("THE VID")
+  // console.log(vid)
+  // console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+  // console.log("vid.width=" + vid.getBoundingClientRect().width )
+  // console.log("vid.height="+ vid.getBoundingClientRect().height)  
+  // console.log("vid.offsetLeft=" + vid.offsetLeft )
+  // console.log("vid.offsetHeight="+ vid.offsetHeight )  
+  // console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
   for ( let ele of allWrappingEles) {
-    console.log(ele)
-    console.log("ele.width=" + ele.getBoundingClientRect().width )
-    console.log("ele.height="+ ele.getBoundingClientRect().height)  
-    console.log("ele.offsetLeft=" + ele.offsetLeft )
-    console.log("ele.offsetHeight="+ ele.offsetHeight )  
     if (vid.getBoundingClientRect().width == ele.getBoundingClientRect().width  
       && vid.getBoundingClientRect().height == ele.getBoundingClientRect().height
       && vid.offsetLeft == ele.offsetLeft
       && vid.offsetHeight == ele.offsetHeight)  {
-        ancestor.candidates ? ancestor.candidates.push(vid) :  ancestor.candidates = [vid]
+        // ancestor.candidates ? ancestor.candidates.push(vid) :  ancestor.candidates = [vid]
         ele.videoReference = vid
         console.log(" ✔✔✔✔✔ Adding candidate")
-        console.log(ancestor.candidates)
+        // console.log(ancestor.candidates)
     } else {
       console.log(" X X X X NOT adding candidate")
     }
   }
-  console.log("-----------------------------------------------ele.candidates")
-  console.log(ancestor.candidates)
+  // console.log(ancestor.candidates)
 
 
 }
 
-function getShit() {
+function getAllWrapingElesAux() {
   let i = 0;
   for (const vid of document.querySelectorAll("video")) {
-    console.log("---- ", i, " ----")
-    console.log("vid: ", vid)
+    // console.log("---- ", i, " ----")
+    // console.log("vid: ", vid)
     getAllWrapingEles(vid, vid.parentElement )
     i++
   }
 }
 
 function setUpElementWithVideo(e, vid) {
-  console.log("In the big IF statment")
-  console.log("e")
-  console.log(e)
+  console.log("Setting up Element with video .......")
+  // console.log(e)
 
   document.mv_popup_element = vid;
 
@@ -232,19 +227,13 @@ function setUpElementWithVideo(e, vid) {
   if (!vid.hasPlaceholder) {
     vid.hasPlaceholder = true;
     document.mv_placeholder = document.createElement("div");
-    document.mv_popup_element.parentNode.insertBefore(
-      document.mv_placeholder,
-      document.mv_popup_element
-    );
+    document.mv_popup_element.parentNode.insertBefore(document.mv_placeholder,document.mv_popup_element);
   }
-  /* ********* Popup info END ********* */
+  
 
   /* This is a flag to skip this video because we already atached the wheel function to it */
   
   e.target.mv_on = true;
-  console.log("going into wheel 1")
-  console.log(e.target)
-  console.log(e.target.onwheel)
   // Attach the onwheel function and then dispatch it.
   e.target.onwheel = (e) => wheel(e, vid);
   document.pvwm = e.target;
@@ -259,38 +248,47 @@ function setUpElementWithVideo(e, vid) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 function run() {
   console.log("!!!!!! IN RUN !!!!!!")
-  getShit() 
-  document.onwheel = main; 
+  getAllWrapingElesAux() 
+  // document.onwheel = main; 
+  // window.onwheel = main; 
+  window.addEventListener('wheel', main);
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
     console.log("-------> MAIN! aka document.WHEEL!< -----------")
-    console.log(e)
-    console.log(e.target)
-    console.log(e.target.videoReference)
-    // HERE
-    console.log("mv_pasue" ,document.mv_pause_function)  
-    console.log("target.mv_on" , e.target.mv_on)  
-    if (!document.mv_pause_function && !e.target.mv_on) {
-      
+    // console.log(e)
+    // console.log(e.target)
+    // console.log(e.target.videoReference)
+    if (e.target.clientWidth < 250) {
+      console.log("video too small")
+      // e.target.mv_on = true;
+      return false
+    }
+    // e.preventDefault();
+    
+    if (!document.mv_pause_function && !e.target.mv_on && !e.target.isNotAVideoWrapper) {
+      if (e.target.tagName == "VIDEO") {
+        e.preventDefault()
+        e.stopPropagation()
+        setUpElementWithVideo(e, e.target)
+        console.log("Script - Found video refrence - fast 1")
+        return false
+      }
       if (e.target.videoReference) {
-        console.log(" @@@#############@@@@@@###### VIDEO REFERENCE")
+        console.log("Script - Found video refrence - fast 2")
+        // console.log(e.target)
+
         e.preventDefault();
         setUpElementWithVideo(e, e.target.videoReference)
-        console.log("we done here baby")
         return
       }
-      
-      console.log("HERE WE GOOOOOOOOOOOOOO")
+      // console.log("Going into for loop ......")
+        console.log("Script - Searching for video refrence - slow 1")
+
       for (const vid of document.querySelectorAll("video")) {
         if (vid.clientWidth < 250) {
-          console.log("video too small")
+          console.log(".....video too small")
           continue
         }
-        // console.log("Found vid: title: ", vid.title , " - src: ", vid.src, " - id: ", vid.id)
-        // console.log("Found vid: vid.getBoundingClientRect x,y: ", vid.getBoundingClientRect().x , vid.getBoundingClientRect().y)
-        // console.log("Found vid: vid.clientHeight, clientWidth: ", vid.clientHeight ,  vid.clientWidth)
-        // console.log("Found vid: e.clientX, e.clientY ", e.clientX ,  e.clientY)
-        // console.log("Found vid: -------> candidate ", e.target.candidates)
        
         if (
           // !vid.paused &&
@@ -298,12 +296,16 @@ function run() {
           && e.clientY <= vid.getBoundingClientRect().y + vid.clientHeight 
           && e.clientX >= vid.getBoundingClientRect().x 
           && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
-          // && (e.target.clientHeight === vid.clientHeight || e.target.clientWidth === vid.clientWidth)
         ) {
           e.preventDefault();
+          console.log("Script - Found for video refrence - slow 2")
           setUpElementWithVideo(e, vid)
           
           break;
+        } else {
+          console.log("Script - strange else in searching for video refrence - slow X-1")
+          console.log("Script - Slow X-2", e.target)
+          e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... Granted very little
         }
       }
     }
@@ -332,9 +334,30 @@ function run() {
 
 
 
-
-
-
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////
 
 
 
@@ -344,13 +367,12 @@ function run() {
 function wheel(e, vid) {
   if (!document.mv_pause_function) {
     console.log("WHEEL EVENT")
-    console.log(e)
-    console.log(e.target)
+    // console.log(e)
+    // console.log(e.target)
     e.preventDefault();
 
     const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
     const delta = e.deltaY;
-    // console.log("CX & delta", cx, delta)
 
     if (e.shiftKey) {
       setBrightness(delta, vid);
@@ -361,34 +383,42 @@ function wheel(e, vid) {
 
     // Change time position
     if (mvObject.mode === "mode_seek_middle") {          
+      console.log("-------> SKIP 1")
       vid.currentTime += getIncrement(delta, mvObject.middle);
 
     // Skip only
     } else if (mvObject.mode === "mode_seek_only") {          
+      console.log("-------> SKIP 2")
       seekVideoByAreas(cX, delta, vid);
 
     // Volume only
     } else if (mvObject.mode === "mode_volume") {
+      console.log("-------> VOLUME")
       changeVolume(delta, vid);
 
-    // Everything 
+    // Default to Everything mode (volume, seek)
     } else { // mvObject.mode ===  mode_everything
 
       // bottom half
       if (e.offsetY <= vid.clientHeight / 2) {
         if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {
+          
+          console.log("-------> POP UP")
           controlPopoutEvent({delta, vid, e});
           // activateFullScreenPopupFeature(delta, vid, e);
 
-        } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {
+        } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {  
+          console.log("-------> SPEED")
           changePlaybackRate(delta, vid);
-        } else {
+        } else {  
+          console.log("-------> VOLUME 2")
           changeVolume(delta, vid);
         }
 
       // top half
       } 
       else { 
+        console.log("-------> SKIP 3")
         seekVideoByAreas(cX, delta, vid);
       }
     }
@@ -416,7 +446,7 @@ function changeVolume(delta, video) {
     mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
   }
   // console.log("VOL - mvObject.volume=", mvObject.volume)
-  console.log("VOL - parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2))=",parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)) )
+  // console.log("VOL - parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2))=",parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)) )
   // mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
   video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
 }
@@ -467,7 +497,8 @@ function getIncrement(delta, mArea) {
 
 
 
-
+// about:config
+// => media.mediasource.enabled = false
 
 
 
@@ -498,7 +529,11 @@ function getIncrement(delta, mArea) {
 // Shitty pop up
 // Shitty pop up
 function close_popup(activatePopupTab) {
-
+  console.log("===============> CLOSING IT")
+  console.log("===============> CLOSING IT")
+  console.log("===============> CLOSING IT")
+  console.log("===============> CLOSING IT")
+  console.log("===============> CLOSING IT")
   document.mv_playing_on_popup = false;
 
   // Pause execution of the wheel function while transitioning out of popup
@@ -511,8 +546,8 @@ function close_popup(activatePopupTab) {
       {
         mv_closePopup: true,
         activatePopupTab: activatePopupTab,
-      },
-      "*"
+      }, 
+      "*" 
     );
   } else {
     mvObject.popup("fechar", activatePopupTab);
@@ -520,49 +555,51 @@ function close_popup(activatePopupTab) {
 
   // Show scrollbar
   document.documentElement.style.overflow = "revert";
-
+  if (document.mv_popup_element.defaultControls != null) {
+    document.mv_popup_element.controls = document.mv_popup_element.defaultControls 
+  }
   // Remove play/pause onclick event
   document.mv_popup_element.onclick = null;
-
   document.mv_popup_element.classList.remove("popup_style");
-
   // Place video back in original position
-  document.mv_placeholder.insertAdjacentElement(
-    "afterend",
-    document.mv_popup_element
-  );
+  document.mv_placeholder.insertAdjacentElement("afterend",document.mv_popup_element);
 
   // Add delay to prevent fullscreen from happening when closing the popup
   setTimeout(() => {
-    document.mv_popup_element.scrollIntoView();
+    // document.mv_popup_element.scrollIntoView();
     document.mv_pause_function = false;
   }, 500);
 }
 
-function open_popup() {
-  if (!document.mv_playing_on_popup) {
+function open_popup(isFullscreen) {
+  console.log("IN OPEN POPUP")
+  if (document.mv_playing_on_popup) {
+    console.log("open_popup - going to clsoe it 1")
+    close_popup(false);
+  } 
+  else if (!document.mv_playing_on_popup) {
+    console.log("open_popup - yeah in")
     document.mv_playing_on_popup = true;
 
     // Pause execution of the wheel function while transitioning to popup
     document.mv_pause_function = true;
-
     // Hide scrollbar
     document.documentElement.style.overflow = "hidden";
 
     document.mv_popup_element.className += " popup_style";
-
-    document.body.insertBefore(
-      document.mv_popup_element,
-      document.body.firstChild
-    );
-
+    document.body.insertBefore( document.mv_popup_element,document.body.firstChild );
+    console.log("open_popup - open pop up controls")
+    console.log(document.mv_popup_element.controls)
+    console.log(document.mv_popup_element.controls)
+    console.log(document.mv_popup_element.controls)
+    console.log(document.mv_popup_element.controls)
+    console.log(document.mv_popup_element.controls)
+    document.mv_popup_element.defaultControls = document.mv_popup_element.controls
+    document.mv_popup_element.controls = true
+    // vidz[0].controls = true
     // Add an event listener to play/pause video when clicking on it
     document.mv_popup_element.onclick = () => {
-      if (!document.mv_popup_element.paused) {
-        document.mv_popup_element.pause();
-      } else {
-        document.mv_popup_element.play();
-      }
+      !document.mv_popup_element.paused ? document.mv_popup_element.pause() : document.mv_popup_element.play();
     };
 
     setTimeout(() => {
@@ -574,7 +611,8 @@ function open_popup() {
       // The page is in an iframe
       getTopIframe(window).postMessage({ mv_topIframe: true }, "*");
     } else {
-      mvObject.popup("criar");
+      console.log("open_popup - Sending message to background script")
+      if(!isFullscreen) { mvObject.popup("criar") };
       document.body.onfullscreenchange = null;
     }
   }
@@ -589,23 +627,36 @@ function setBrightness(delta, vid) {
   vid.style.filter = "brightness(" + mvObject.brightness + ")";
 }
 
-function controlPopoutEvent(data) {
+async function controlPopoutEvent(data) {
+  console.log("1 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
   let d2 = { ... data }
   let {delta, vid, e} = data
-  console.log("delta, vid, e and data:")
-  console.log(delta)
-  console.log(vid)
-  console.log(e)
-  console.log(data)
-  console.log("mvObject.popoutseting")
-  console.log(mvObject.popoutSetting)
-  console.log("mvObject")
+  // console.log("delta, vid, e and data:")
+  // console.log(delta)
+  // console.log(vid)
+  // console.log(e)
+  // console.log(data)
+  console.log("controlPopoutEvent - mvObject")
   console.log(mvObject)
+  console.log("controlPopoutEvent - mvObject.popoutseting")
+  console.log(mvObject.popoutSetting)
   if (mvObject.popoutSetting == "pip"){
+    console.log("controlPopoutEvent - GOING IN POP UP")
     activatePopupFeature(delta, vid, e)
   }
   if (mvObject.popoutSetting == "newTab"){
-    activateNewTab(delta, vid, e)
+
+    // activateNewTab(delta, vid, e)
+    console.log("controlPopoutEvent - GOING IN NEW TAB")
+    console.log("controlPopoutEvent - VID")
+    console.log(vid)
+    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
+    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
+    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
+    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
+    // mvObject.popupTabOrFullscreen(vid)
+    // activatePopupFeature(delta, vid, e)
+    // activateFullScreen(delta, vid, e)
   }
   if (mvObject.popoutSetting == "fullscreen"){
     activateFullScreen(delta, vid, e)
@@ -613,75 +664,73 @@ function controlPopoutEvent(data) {
   if (mvObject.popoutSetting == "disabled"){
     // do nothing
   }
+  console.log("2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
 }
 
-function activateNewTab(delta, vid, e) {
-
-}
 
 function activateFullScreen(delta, vid, e) {
-  if (delta > 0) {
-    open_popup();
-  } else if (delta < 0) {
-    close_popup(true);
-  }
+  console.log(" ???????????? activiating fullscreen")
+  open_popup(true);
 }
 
 function activatePopupFeature(delta, vid, e) {
   if (delta > 0) {
+    console.log(" activatePopupFeature- !!!")
+    console.log(" activatePopupFeature- delta is positive", delta)
+    console.log(" activatePopupFeature - mv_playing_on_popup", document.mv_playing_on_popup)
+    console.log(" activatePopupFeature- fullscreenElement", document.fullscreenElement)
     // Close popup and stay on the current tab
     if (document.mv_playing_on_popup) {
+      console.log("open +1")
       close_popup(false);
     } else {
       // The popup must open only when the video is not in fullscreen mode.
       if (document.fullscreenElement) {
+        console.log("open +2")
         document.exitFullscreen();
 
-        // We need this so that when the user scrolls out of fullscreen
-        // the popup doesn't open up unwantedly
+        // We need this so that when the user scrolls out of fullscreen the popup doesn't open up unwantedly
         document.mv_pause_function = true;
-        setTimeout(() => {
-          document.mv_pause_function = false;
-        }, 500);
+        setTimeout(() => { document.mv_pause_function = false;}, 500);
       } else {
+        console.log("open +3")
         open_popup();
       }
     }
   } else if (delta < 0) {
+    console.log(" activatePopupFeature- !!!")
+    console.log(" activatePopupFeature - delta is negative", delta)
+    console.log(" activatePopupFeature- mv_playing_on_popup", document.mv_playing_on_popup)
+    console.log(" activatePopupFeature -fullscreenElement", document.fullscreenElement)
     // Close popup and move to the tab playing the video
     if (document.mv_playing_on_popup) {
-      close_popup(true);
+      console.log("close -1")
+      // close_popup(true);
+      // console.log("close -1.5 - going to clsoe it 1")
+      close_popup(false);
+    
     } else {
       if (document.fullscreenElement == null) {
         (function (x) {
           setTimeout(function () {
             if (document.fullscreenElement == null) {
-              const attribs = [
-                ...document
-                  .elementsFromPoint(e.x, e.y)
-                  .filter(
-                    (el) =>
-                      (el.contains(vid) &&
-                        el.clientWidth === e.target.clientWidth) ||
-                      el.clientHeight === e.target.clientHeight
-                  )
+              console.log("close -2")
+              const attribs = [ ...document.elementsFromPoint(e.x, e.y)
+                  .filter( (el) => (el.contains(vid) && el.clientWidth === e.target.clientWidth) || el.clientHeight === e.target.clientHeight )
                   .pop()
                   .querySelectorAll("*"),
               ]
                 .map((node) => [...node.attributes])
                 .reduce((acc, cur) => acc.concat(cur), [])
-                .filter(
-                  (attrib) =>
+                .filter( (attrib) => 
                     attrib.nodeValue
                       .toLowerCase()
                       .replace(" ", "")
                       .indexOf("fullscreen") >= 0
                 )
-                .filter(
-                  (attrib) =>
-                    attrib.ownerElement.clientWidth !== x.clientWidth &&
-                    attrib.ownerElement.clientHeight !== x.clientHeight
-                );
+                .filter( (attrib) => attrib.ownerElement.clientWidth !== x.clientWidth && attrib.ownerElement.clientHeight !== x.clientHeight );
+                
+              console.log("close -2.1", attribs)
               for (const x of attribs) {
                 try {
                   if (document.fullscreenElement == null)
@@ -701,79 +750,13 @@ function activatePopupFeature(delta, vid, e) {
   }
 }
 
-function activateFullScreenPopupFeature(delta, vid, e) {
-  if (delta > 0) {
-    // Close popup and stay on the current tab
-    if (document.mv_playing_on_popup) {
-      close_popup(false);
-    } else {
-      // The popup must open only when the video is not in fullscreen mode.
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
 
-        // We need this so that when the user scrolls out of fullscreen
-        // the popup doesn't open up unwantedly
-        document.mv_pause_function = true;
-        setTimeout(() => {
-          document.mv_pause_function = false;
-        }, 500);
-      } else {
-        open_popup();
-      }
-    }
-  } else if (delta < 0) {
-    // Close popup and move to the tab playing the video
-    if (document.mv_playing_on_popup) {
-      close_popup(true);
-    } else {
-      if (document.fullscreenElement == null) {
-        (function (x) {
-          setTimeout(function () {
-            if (document.fullscreenElement == null) {
-              const attribs = [
-                ...document
-                  .elementsFromPoint(e.x, e.y)
-                  .filter(
-                    (el) =>
-                      (el.contains(vid) &&
-                        el.clientWidth === e.target.clientWidth) ||
-                      el.clientHeight === e.target.clientHeight
-                  )
-                  .pop()
-                  .querySelectorAll("*"),
-              ]
-                .map((node) => [...node.attributes])
-                .reduce((acc, cur) => acc.concat(cur), [])
-                .filter(
-                  (attrib) =>
-                    attrib.nodeValue
-                      .toLowerCase()
-                      .replace(" ", "")
-                      .indexOf("fullscreen") >= 0
-                )
-                .filter(
-                  (attrib) =>
-                    attrib.ownerElement.clientWidth !== x.clientWidth &&
-                    attrib.ownerElement.clientHeight !== x.clientHeight
-                );
-              for (const x of attribs) {
-                try {
-                  if (document.fullscreenElement == null)
-                    x.ownerElement.click();
-                } catch (e) {}
-              }
-              setTimeout(() => {
-                if (document.fullscreenElement == null) {
-                  x.requestFullscreen();
-                }
-              }, 100);
-            }
-          }, 100);
-        })(vid);
-      }
-    }
-  }
-}
+
+
+
+
+
+
 
 
 

@@ -14,39 +14,46 @@ browser.tabs.onActivated.addListener((info) => {
   });
 });
 
-function handlePopUp(message) {
-  console.log("background - in pop up")
+function handlePopUp(message, sender) {
+  console.log("background - creating pop up 1")
+  console.log("background - message=", message)
+  console.log("background - sender.tab.id=", sender.tab.id)
+  console.log("background - previousTabIndex=", previousTabIndex)
     if (message.acao === "criar") { // message.action === create
-      console.log("background - in create")
-      browser.tabs.highlight({
-        windowId: sender.tab.windowId,
-        tabs: [previousTabIndex],
-      });
-      browser.windows
-        .create({
-          width: 370,
-          height: 230,
-          type: "popup",
-          tabId: sender.tab.id,
-        })
-        .then((info) => {
-          popups[info.id] = {
-            tabIndex: sender.tab.index,
-            windowId: sender.tab.windowId,
-            popupTabId: info.tabs[0].id,
-          };
-          browser.windows.update(info.id, {
-            left: screen.width - 390,
-            top: screen.height - 255,
-          });
+      console.log("background - creating popup 2" )
+      // browser.tabs.highlight({
+      //   windowId: sender.tab.windowId,
+      //   tabs: [previousTabIndex],
+      // });
+      browser.windows.create({
+        width: 370,
+        height: 230,
+        type: "popup",
+        tabId: sender.tab.id,
+      })
+      .then((info) => {
+        popups[info.id] = {
+          tabIndex: sender.tab.index,
+          windowId: sender.tab.windowId,
+          popupTabId: info.tabs[0].id,
+        };
+        browser.windows.update(info.id, {
+          left: screen.width - 390,
+          top: screen.height - 255,
         });
+      });
+      console.log("background - done create")
     } 
     else if (message.acao === "fechar") { // message.action === close
-      console.log("background - in close")
       browser.windows.getCurrent().then((winInfo) => {
         // Move back to main window
-        browser.tabs
-          .move(popups[winInfo.id].popupTabId, {
+        
+        console.log("background - in close")
+        console.log("background - in close, winInfo" , winInfo)
+        if (!winInfo || !winInfo.id) {
+          return
+        }
+        browser.tabs.move(popups[winInfo.id].popupTabId, {
             windowId: popups[winInfo.id].windowId,
             index: popups[winInfo.id].tabIndex,
           })
@@ -63,15 +70,56 @@ function handlePopUp(message) {
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
-  console.log("background ---- ")
-  console.log("background - Some message - some sender")
-  console.log(message)
+  console.log("Background - MSG FROM CONTENT SCRIPT  ---- ", message)
+  console.log("background - sender:")
   console.log(sender)
+  console.log(sender.tab.windowId)
   if (message.showIcon) {
     chrome.pageAction.show(sender.tab.id);
   } 
   else if (message.popup) {
-    handlePopUp(message)
+    console.log("background - POP UP")
+    handlePopUp(message, sender)
+  } 
+  // else if (message.popoutSetting == "newTab") {
+  else if (message.popoutSetting == "fullscreen") {
+    
+  console.log("background - NEW TAB")
+  console.log("background - message.vid")
+  console.log("background - ", message.vid)
+    function onError(error) {
+      console.log(`Error: ${error}`);
+    }
+    function onCreated(tab) {
+      console.log(`Created new tab: `)
+      console.log(tab)
+      console.log(`Created new tab, id=${tab.id}`)
+    }
+
+    var creating = browser.tabs.create({
+      active: true,
+      windowId: sender.tab.windowId,
+      url: sender.url,
+      // url:"https://example.org"
+    });
+    creating.then(()=> {
+      console.log("background - Created new tab-")
+      onCreated()
+    }, onError);
+
+    // function logTabs(tabs) {
+    //   for (let tab of tabs) {
+    //     console.log("background - QUERYING !!!")
+    //     console.log(tab);
+    //     console.log(tab.url);
+    //   }
+    // }    
+    // let querying = browser.tabs.query({
+    //   active: true,
+    //   currentWindow: true
+    // })
+    // querying.then(logTabs, onError);
+
   }
 
   // Aqui vamos verificar se a extensão deve ser desativada neste site. // Se o usuário desativou então o domain fica guardado.
@@ -80,8 +128,8 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   chrome.storage.local.get(domain, function (info) {
     // Se não tiver nada então não desativou
     // If there's nothing then it hasn't deactivated
-    console.log("background - background storage ", info)
-    console.log("background - background storage Object.keys(info)", Object.keys(info))
+    // console.log("background - background storage ", info)
+    // console.log("background - background storage Object.keys(info)", Object.keys(info))
     if (Object.keys(info).length === 0) {
       chrome.tabs.sendMessage(sender.tab.id, {
         run: true,
