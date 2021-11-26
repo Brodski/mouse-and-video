@@ -246,12 +246,139 @@ function setUpElementWithVideo(e, vid) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+let iconsDict = {}
 function run() {
   console.log("!!!!!! IN RUN !!!!!!")
   getAllWrapingElesAux() 
   // document.onwheel = main; 
   // window.onwheel = main; 
+  let stylez = document.createElement("style");
+  stylez.innerHTML = `
+    .volume-icon {
+      position: absolute;
+      display: inline-flex;
+    }
+    #icon-wrapper {
+      position: absolute;
+    }
+    #icon-wrapper svg,
+    #icon-wrapper img,
+    #icon-wrapper span {
+      position: absolute;
+      pointer-events: none; 
+      opacity: 0;
+      height: 14px;
+      width: 14px;
+      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    }
+    
+    #icon-wrapper span {
+      color: white;
+      left: calc(16px + 4px);
+      font-size: 12px;
+    }
+    #icon-wrapper svg path {
+      fill: white;
+    }
+    
+    .fade-icon-out, 
+    .fade-icon-out svg, 
+    .fade-icon-out span {
+      animation: fadeOut ease 1.5s;
+    }
+    @keyframes fadeOut {
+      0% {
+        opacity: .9;
+      }
+      100% {
+        opacity:0;
+      }
+    }
+    #icon-wrapper .disp-block {
+      display: block;
+    }
+  `
+  let iconWrapper = document.createElement("div");
+  iconWrapper.id= "icon-wrapper"
+  document.body.append(stylez)
   window.addEventListener('wheel', main);
+  
+  let seek_ff = document.createElement("img");
+  let seek_rewind = document.createElement("img");
+  let vol_decrease = document.createElement("img");
+  let vol_increase = document.createElement("img");
+  let vol_mute = document.createElement("img");
+
+  seek_ff.src = browser.runtime.getURL("../icons/seek_ff.svg")
+  seek_rewind.src = browser.runtime.getURL("../icons/seek_rewind.svg")
+  vol_decrease.src = browser.runtime.getURL("../icons/vol_decrease.svg")
+  vol_increase.src = browser.runtime.getURL("../icons/vol_increase.svg")
+  vol_mute.src = browser.runtime.getURL("../icons/vol_mute.svg")
+
+  seek_ff.id = "seek_ff"
+  seek_rewind.id = "seek_rewind"
+  vol_decrease.id = "vol_decrease"
+  vol_increase.id = "vol_increase"
+  vol_mute.id = "vol_mute"
+
+
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+  //From dryicons
+  iconsDict["seek_ff"] = seek_ff;
+  iconsDict["seek_rewind"] = seek_rewind;
+  iconsDict["vol_decrease"] = vol_decrease;
+  iconsDict["vol_increase"] = vol_increase;
+  iconsDict["vol_mute"] = vol_mute;
+  
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+
+  console.log("$$$$$$$$$$$$$$$$$$$$$$$$")
+  console.log(browser.runtime.getURL("../icons/seek_ff.svg"))
+  document.body.append(iconWrapper)
+
+  // iconWrapper.appendChild(seek_ff)
+  // iconWrapper.appendChild(seek_rewind)
+  // iconWrapper.appendChild(vol_decrease)
+  // iconWrapper.appendChild(vol_increase)
+  // iconWrapper.appendChild(vol_mute)
+
+ // <img src='vol.svg'> ---> <svg>
+ //     https://dev.to/luisaugusto/how-to-convert-image-tags-with-svg-files-into-inline-svg-tags-3jfl
+
+  const convertImages = (myIconsDict, callback) => {
+    // const images = document.querySelectorAll(query);
+    for (const key in myIconsDict) {
+      console.log(`${key}: ${myIconsDict[key]}`);
+      console.log(myIconsDict[key]);
+      image = myIconsDict[key]
+      fetch(image.src)
+      .then(res => res.text())
+      .then(data => {
+        const parser = new DOMParser();
+        const svg = parser.parseFromString(data, 'image/svg+xml').querySelector('svg');
+  
+        if (image.id) svg.id = image.id;
+        if (image.className) svg.classList = image.classList;
+  
+        // image.parentNode.replaceChild(svg, image);
+        myIconsDict[key] = svg
+      })
+      .then(callback)
+      .catch(error => console.error(error))
+    }
+  }
+
+  // convertImages("#icon-wrapper img", ()=>{console.log('done :)')})
+  convertImages(iconsDict, ()=>{console.log('done :)')})
+
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
     console.log("-------> MAIN! aka document.WHEEL!< -----------")
@@ -427,11 +554,88 @@ function wheel(e, vid) {
 }
 
 
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+function displayIcon(iconName, video) {
+  function getText(iconName) {
+    if (iconName == "vol_increase") {
+      return (video.volume + mvObject.volumeRate * 0.01).toFixed(2)
+    }
+    if (iconName == "vol_decrease") {
+      return (video.volume - mvObject.volumeRate * 0.01).toFixed(2)
+    }
+  }
+
+  let span = document.createElement("span")
+  span.innerText = getText(iconName) //video.volume.toFixed(2);
+
+  // put the element on the screen, then give a fade away styling
+  let iconWrapper = document.getElementById("icon-wrapper")  
+  iconWrapper.innerHTML = iconsDict["vol_increase"].outerHTML + span.outerHTML
+  iconWrapper.classList.remove("fade-icon-out")
+  iconWrapper.classList.add("fade-icon-out")
+
+  // Place icon in top left of video
+  let scrollLeft = window.pageXOffset || video.scrollLeft
+  let scrollTop = window.pageYOffset || video.scrollTop
+  let vidTop  = video.getClientRects()[0].top + scrollTop
+  let vidLeft = video.getClientRects()[0].left + scrollLeft
+  iconWrapper.style.top = vidTop + 'px'
+  iconWrapper.style.left = vidLeft +'px'
+  document.body.appendChild(iconWrapper);
+}
+
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+
+
+
+
 
 function changeVolume(delta, video) {
   if (video.muted) {
     video.muted = false;
-    video.volume = 0;
+    video.volume = video.volume; // ???????????
+    // video.volume = 0;
+  }
+// HERE
+  if (delta < 0) {
+    displayIcon("vol_increase", video)
+  } else { 
+    displayIcon("vol_decrease", video)
   }
   
   mvObject.volume = video.volume;
@@ -442,27 +646,39 @@ function changeVolume(delta, video) {
   } 
   else if (delta > 0  && deltaVolume + mvObject.volume <= 0 ) {
     mvObject.volume = 0;
-  } else {
+  } 
+  else {
     mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
   }
-  // console.log("VOL - mvObject.volume=", mvObject.volume)
-  // console.log("VOL - parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2))=",parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2)) )
-  // mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
   video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
 }
+
+
+
+
+
+
+
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+
 
 let firstMov;
 function changePlaybackRate(delta, video) {
   firstMov = delta;
-  setTimeout(
-    function (mov) {
+  setTimeout( function (mov) {
       if (firstMov !== mov) {
         video.playbackRate = video.defaultPlaybackRate;
       }
-    },
-    150,
-    firstMov
-  );
+    },150, firstMov );
   video.playbackRate += 1 * (delta < 0 ? 1 * 0.25 : -1 * 0.25);
   video.playbackRate = parseFloat( Math.min(Math.max(video.playbackRate, 0.25), 4).toFixed(2) );
 }
@@ -478,9 +694,7 @@ function seekVideoByAreas(cX, delta, video) {
     seekTo += getIncrement(delta, mvObject.right);
   }
   if (isNetflix) {
-    document.dispatchEvent(
-      new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 })
-    ); // milliseconds
+    document.dispatchEvent( new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 }) ); // milliseconds
   } else {
     video.currentTime = seekTo;
   }
@@ -490,6 +704,16 @@ function getIncrement(delta, mArea) {
   return 1 * (delta < 0 ? 1 * mArea : -1 * mArea);
 }
 
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
 
 
 
