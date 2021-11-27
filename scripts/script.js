@@ -261,14 +261,15 @@ function run() {
     #icon-wrapper {
       position: absolute;
     }
+
     #icon-wrapper svg,
     #icon-wrapper img,
     #icon-wrapper span {
       position: absolute;
-      pointer-events: none; 
-      opacity: 0;
       height: 14px;
       width: 14px;
+      pointer-events: none; 
+      opacity: 0;
       filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
     }
     
@@ -276,6 +277,7 @@ function run() {
       color: white;
       left: calc(16px + 4px);
       font-size: 12px;
+      white-space: nowrap;
     }
     #icon-wrapper svg path {
       fill: white;
@@ -284,7 +286,7 @@ function run() {
     .fade-icon-out, 
     .fade-icon-out svg, 
     .fade-icon-out span {
-      animation: fadeOut ease 1.5s;
+      animation: fadeOut ease 1.75s;
     }
     @keyframes fadeOut {
       0% {
@@ -308,18 +310,21 @@ function run() {
   let vol_decrease = document.createElement("img");
   let vol_increase = document.createElement("img");
   let vol_mute = document.createElement("img");
+  let play_speed = document.createElement("img");
 
   seek_ff.src = browser.runtime.getURL("../icons/seek_ff.svg")
   seek_rewind.src = browser.runtime.getURL("../icons/seek_rewind.svg")
   vol_decrease.src = browser.runtime.getURL("../icons/vol_decrease.svg")
   vol_increase.src = browser.runtime.getURL("../icons/vol_increase.svg")
   vol_mute.src = browser.runtime.getURL("../icons/vol_mute.svg")
+  play_speed.src = browser.runtime.getURL("../icons/play_speed.svg")
 
   seek_ff.id = "seek_ff"
   seek_rewind.id = "seek_rewind"
   vol_decrease.id = "vol_decrease"
   vol_increase.id = "vol_increase"
   vol_mute.id = "vol_mute"
+  play_speed.id = "play_speed"
 
 
 ///////////////                                ///////////////                         ///////////////
@@ -333,6 +338,7 @@ function run() {
   iconsDict["vol_decrease"] = vol_decrease;
   iconsDict["vol_increase"] = vol_increase;
   iconsDict["vol_mute"] = vol_mute;
+  iconsDict["play_speed"] = play_speed;
   
 ///////////////                                ///////////////                         ///////////////
 ///////////////                                ///////////////                         ///////////////
@@ -340,8 +346,6 @@ function run() {
 ///////////////                                ///////////////                         ///////////////
 ///////////////                                ///////////////                         ///////////////
 
-  console.log("$$$$$$$$$$$$$$$$$$$$$$$$")
-  console.log(browser.runtime.getURL("../icons/seek_ff.svg"))
   document.body.append(iconWrapper)
 
   // iconWrapper.appendChild(seek_ff)
@@ -583,22 +587,18 @@ function wheel(e, vid) {
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
-function displayIcon(iconName, video) {
-  function getText(iconName) {
-    if (iconName == "vol_increase") {
-      return (video.volume + mvObject.volumeRate * 0.01).toFixed(2)
-    }
-    if (iconName == "vol_decrease") {
-      return (video.volume - mvObject.volumeRate * 0.01).toFixed(2)
-    }
-  }
+// HERE
+function displayIcon(iconName, msg, video) {
+
 
   let span = document.createElement("span")
-  span.innerText = getText(iconName) //video.volume.toFixed(2);
+  // span.innerText = getText(iconName) //video.volume.toFixed(2);
+  span.innerText = msg
 
   // put the element on the screen, then give a fade away styling
   let iconWrapper = document.getElementById("icon-wrapper")  
-  iconWrapper.innerHTML = iconsDict["vol_increase"].outerHTML + span.outerHTML
+  // iconWrapper.innerHTML = iconsDict["vol_increase"].outerHTML + span.outerHTML
+  iconWrapper.innerHTML = iconsDict[iconName].outerHTML + span.outerHTML
   iconWrapper.classList.remove("fade-icon-out")
   iconWrapper.classList.add("fade-icon-out")
 
@@ -631,11 +631,13 @@ function changeVolume(delta, video) {
     video.volume = video.volume; // ???????????
     // video.volume = 0;
   }
-// HERE
+// HERE 
   if (delta < 0) {
-    displayIcon("vol_increase", video)
+    let msg = (video.volume + mvObject.volumeRate * 0.01).toFixed(2)
+    displayIcon("vol_increase", msg, video)
   } else { 
-    displayIcon("vol_decrease", video)
+    let msg = (video.volume - mvObject.volumeRate * 0.01).toFixed(2)
+    displayIcon("vol_decrease", msg, video)
   }
   
   mvObject.volume = video.volume;
@@ -671,38 +673,69 @@ function changeVolume(delta, video) {
 ///////////////                                                         ///////////////
 
 
-let firstMov;
+// HERE
 function changePlaybackRate(delta, video) {
-  firstMov = delta;
+  let firstMov = delta;
   setTimeout( function (mov) {
       if (firstMov !== mov) {
         video.playbackRate = video.defaultPlaybackRate;
       }
     },150, firstMov );
+
   video.playbackRate += 1 * (delta < 0 ? 1 * 0.25 : -1 * 0.25);
-  video.playbackRate = parseFloat( Math.min(Math.max(video.playbackRate, 0.25), 4).toFixed(2) );
+
+  let playback = parseFloat( Math.min(Math.max(video.playbackRate, 0.25), 4).toFixed(2) );
+  displayIcon("play_speed", playback, video )
+  video.playbackRate = playback;
 }
 
-let seekTo;
+// HERE
 function seekVideoByAreas(cX, delta, video) {
-  seekTo = video.currentTime;
-  if (cX <= video.clientWidth / 3) {
-    seekTo += getIncrement(delta, mvObject.left);
-  } else if ( cX > video.clientWidth / 3 && cX <= (video.clientWidth / 3) * 2 ) {
-    seekTo += getIncrement(delta, mvObject.middle);
-  } else {
-    seekTo += getIncrement(delta, mvObject.right);
+  let seekTo = video.currentTime;
+  let rate;
+  const neet2Digits = (num) => { 
+    return num < 10 ? "0" + num : num
   }
-  if (isNetflix) {
-    document.dispatchEvent( new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 }) ); // milliseconds
-  } else {
+  const getIncrement = (delta, rate) => {
+    return 1 * (delta < 0 ? 1 * rate : -1 * rate);
+  }
+  const getSeekAndRate = () => {
+    if (cX <= video.clientWidth / 3) {
+      rate = mvObject.left
+      seekTo += getIncrement(delta, mvObject.left);
+    } else if ( cX > video.clientWidth / 3 && cX <= (video.clientWidth / 3) * 2 ) {
+      rate = mvObject.middle
+      seekTo += getIncrement(delta, mvObject.middle);
+    } else {
+      rate = mvObject.right
+      seekTo += getIncrement(delta, mvObject.right);
+    }
+    seekTo = seekTo < 0 ? 0 : seekTo;
+    return seekTo
+  }
+
+  seekTo = getSeekAndRate()
+  if (!isNetflix) {
+    seekTo2 =  Math.floor(seekTo)
+    let seconds = seekTo2 % 60
+    let minutes = Math.floor((seekTo2 / 60))
+    let hours = Math.floor((seekTo2 / 3600)) 
+    let time = null;
+    if (seekTo >= 3600) { // 1 hour = 60 * 60
+      time = hours + ":" + neet2Digits(minutes - 60*hours) + ":" + neet2Digits(seconds)
+    }
+    else {
+      time = neet2Digits(minutes) + ":" + neet2Digits(seconds)
+    }
+    rate = delta < 0 ? "+" + rate :  "-" + rate
+    delta < 0 ? displayIcon("seek_ff", `${time} (${rate}) `, video) : displayIcon("seek_rewind", `${time} (${rate})`, video)    
     video.currentTime = seekTo;
-  }
+  }  
+  else if (isNetflix) {
+    document.dispatchEvent( new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 }) ); // milliseconds
+  } 
 }
 
-function getIncrement(delta, mArea) {
-  return 1 * (delta < 0 ? 1 * mArea : -1 * mArea);
-}
 
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
