@@ -142,6 +142,136 @@ chrome.storage.onChanged.addListener(function (changes) {
 
 
 
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+
+
+ // convert img with src to svg
+ // https://dev.to/luisaugusto/how-to-convert-image-tags-with-svg-files-into-inline-svg-tags-3jfl
+function convertImages(myIconsDict, callback) {
+  // const images = document.querySelectorAll(query);
+  for (const key in myIconsDict) {
+    // console.log(`${key}: ${myIconsDict[key]}`);
+    // console.log(myIconsDict[key]);
+    image = myIconsDict[key]
+    fetch(image.src)
+    .then(res => res.text())
+    .then(data => {
+      const parser = new DOMParser();
+      const svg = parser.parseFromString(data, 'image/svg+xml').querySelector('svg');
+
+      if (image.id) svg.id = image.id;
+      if (image.className) svg.classList = image.classList;
+
+      // image.parentNode.replaceChild(svg, image);
+      myIconsDict[key] = svg
+    })
+    .then(callback)
+    .catch(error => console.error(error))
+  }
+}
+function setupIcons() {
+  
+  let iconWrapper = document.createElement("div");
+  iconWrapper.id= "icon-wrapper"
+  
+  let seek_ff = document.createElement("img");
+  let seek_rewind = document.createElement("img");
+  let vol_decrease = document.createElement("img");
+  let vol_increase = document.createElement("img");
+  let vol_mute = document.createElement("img");
+  let play_speed = document.createElement("img");
+
+  seek_ff.src = browser.runtime.getURL("../icons/seek_ff.svg")
+  seek_rewind.src = browser.runtime.getURL("../icons/seek_rewind.svg")
+  vol_decrease.src = browser.runtime.getURL("../icons/vol_decrease.svg")
+  vol_increase.src = browser.runtime.getURL("../icons/vol_increase.svg")
+  vol_mute.src = browser.runtime.getURL("../icons/vol_mute.svg")
+  play_speed.src = browser.runtime.getURL("../icons/play_speed.svg")
+
+  seek_ff.id = "seek_ff"
+  seek_rewind.id = "seek_rewind"
+  vol_decrease.id = "vol_decrease"
+  vol_increase.id = "vol_increase"
+  vol_mute.id = "vol_mute"
+  play_speed.id = "play_speed" 
+  
+  // From dryicons
+  iconsDict["seek_ff"] = seek_ff;
+  iconsDict["seek_rewind"] = seek_rewind;
+  iconsDict["vol_decrease"] = vol_decrease;
+  iconsDict["vol_increase"] = vol_increase;
+  iconsDict["vol_mute"] = vol_mute;
+  iconsDict["play_speed"] = play_speed;
+  document.body.append(iconWrapper)
+  convertImages(iconsDict, ()=>{} )
+}
+
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+///////////////                                ///////////////                         ///////////////
+
+
+function setupStyles() {
+  let stylez = document.createElement("style");
+  document.body.append(stylez)
+  stylez.innerHTML = `
+    .volume-icon {
+      position: absolute;
+      display: inline-flex;
+    }
+    #icon-wrapper {
+      position: absolute;
+    }
+
+    #icon-wrapper svg,
+    #icon-wrapper img,
+    #icon-wrapper span {
+      position: absolute;
+      height: 14px;
+      width: 14px;
+      pointer-events: none; 
+      opacity: 0;
+      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    }
+    
+    #icon-wrapper span {
+      color: white;
+      left: calc(16px + 4px);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    #icon-wrapper svg path {
+      fill: white;
+    }
+    
+    .fade-icon-out, 
+    .fade-icon-out svg, 
+    .fade-icon-out span {
+      animation: fadeOut ease 1.75s;
+    }
+    @keyframes fadeOut {
+      0% {
+        opacity: .9;
+      }
+      100% {
+        opacity:0;
+      }
+    }
+    #icon-wrapper .disp-block {
+      display: block;
+    }
+    .stop-scrolling {
+      height: 100%;
+      overflow: hidden;
+    }
+  `
+}
 
 document.addEventListener('click', event => {
   // console.log("Click", event)
@@ -217,29 +347,26 @@ function getAllWrapingElesAux() {
 }
 
 function setUpElementWithVideo(e, vid) {
-  console.log("Setting up Element with video .......")
-  // console.log(e)
-
+  e.preventDefault()
+  console.log("Setting up Element with video ....... start 1 ")
   document.mv_popup_element = vid;
 
-  /* ********* Popup info START ********* */
-  /* This will be used to know where to place the element when the popup closes. 'hasPlaceholder' is used so that a new 'div' won't be created when the video is in the popup. */
+  
+  /* Popup - This will be used to know where to place the element when the popup closes. 'hasPlaceholder' is used so that a new 'div' won't be created when the video is in the popup. */
   if (!vid.hasPlaceholder) {
     vid.hasPlaceholder = true;
     document.mv_placeholder = document.createElement("div");
     document.mv_popup_element.parentNode.insertBefore(document.mv_placeholder,document.mv_popup_element);
-  }
-  
+  }  
 
-  /* This is a flag to skip this video because we already atached the wheel function to it */
-  
+  /* This is a flag to skip this video because we already atached the wheel function to it */  
   e.target.mv_on = true;
   // Attach the onwheel function and then dispatch it.
   e.target.onwheel = (e) => wheel(e, vid);
   document.pvwm = e.target;
+  console.log("Setting up Element with video ....... complete 2")
   wheel(e, vid);
 }
-
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
@@ -252,168 +379,65 @@ function run() {
   getAllWrapingElesAux() 
   // document.onwheel = main; 
   // window.onwheel = main; 
-  let stylez = document.createElement("style");
-  stylez.innerHTML = `
-    .volume-icon {
-      position: absolute;
-      display: inline-flex;
-    }
-    #icon-wrapper {
-      position: absolute;
-    }
-
-    #icon-wrapper svg,
-    #icon-wrapper img,
-    #icon-wrapper span {
-      position: absolute;
-      height: 14px;
-      width: 14px;
-      pointer-events: none; 
-      opacity: 0;
-      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
-    }
-    
-    #icon-wrapper span {
-      color: white;
-      left: calc(16px + 4px);
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    #icon-wrapper svg path {
-      fill: white;
-    }
-    
-    .fade-icon-out, 
-    .fade-icon-out svg, 
-    .fade-icon-out span {
-      animation: fadeOut ease 1.75s;
-    }
-    @keyframes fadeOut {
-      0% {
-        opacity: .9;
-      }
-      100% {
-        opacity:0;
-      }
-    }
-    #icon-wrapper .disp-block {
-      display: block;
-    }
-  `
-  let iconWrapper = document.createElement("div");
-  iconWrapper.id= "icon-wrapper"
-  document.body.append(stylez)
-  window.addEventListener('wheel', main);
+  setupStyles()
+  setupIcons()
+  window.addEventListener('wheel', main, false);
   
-  let seek_ff = document.createElement("img");
-  let seek_rewind = document.createElement("img");
-  let vol_decrease = document.createElement("img");
-  let vol_increase = document.createElement("img");
-  let vol_mute = document.createElement("img");
-  let play_speed = document.createElement("img");
-
-  seek_ff.src = browser.runtime.getURL("../icons/seek_ff.svg")
-  seek_rewind.src = browser.runtime.getURL("../icons/seek_rewind.svg")
-  vol_decrease.src = browser.runtime.getURL("../icons/vol_decrease.svg")
-  vol_increase.src = browser.runtime.getURL("../icons/vol_increase.svg")
-  vol_mute.src = browser.runtime.getURL("../icons/vol_mute.svg")
-  play_speed.src = browser.runtime.getURL("../icons/play_speed.svg")
-
-  seek_ff.id = "seek_ff"
-  seek_rewind.id = "seek_rewind"
-  vol_decrease.id = "vol_decrease"
-  vol_increase.id = "vol_increase"
-  vol_mute.id = "vol_mute"
-  play_speed.id = "play_speed"
 
 
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-  //From dryicons
-  iconsDict["seek_ff"] = seek_ff;
-  iconsDict["seek_rewind"] = seek_rewind;
-  iconsDict["vol_decrease"] = vol_decrease;
-  iconsDict["vol_increase"] = vol_increase;
-  iconsDict["vol_mute"] = vol_mute;
-  iconsDict["play_speed"] = play_speed;
-  
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
 
-  document.body.append(iconWrapper)
 
-  // iconWrapper.appendChild(seek_ff)
-  // iconWrapper.appendChild(seek_rewind)
-  // iconWrapper.appendChild(vol_decrease)
-  // iconWrapper.appendChild(vol_increase)
-  // iconWrapper.appendChild(vol_mute)
-
- // <img src='vol.svg'> ---> <svg>
- //     https://dev.to/luisaugusto/how-to-convert-image-tags-with-svg-files-into-inline-svg-tags-3jfl
-
-  const convertImages = (myIconsDict, callback) => {
-    // const images = document.querySelectorAll(query);
-    for (const key in myIconsDict) {
-      console.log(`${key}: ${myIconsDict[key]}`);
-      console.log(myIconsDict[key]);
-      image = myIconsDict[key]
-      fetch(image.src)
-      .then(res => res.text())
-      .then(data => {
-        const parser = new DOMParser();
-        const svg = parser.parseFromString(data, 'image/svg+xml').querySelector('svg');
-  
-        if (image.id) svg.id = image.id;
-        if (image.className) svg.classList = image.classList;
-  
-        // image.parentNode.replaceChild(svg, image);
-        myIconsDict[key] = svg
-      })
-      .then(callback)
-      .catch(error => console.error(error))
-    }
-  }
-
-  // convertImages("#icon-wrapper img", ()=>{console.log('done :)')})
-  convertImages(iconsDict, ()=>{console.log('done :)')})
 
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
     console.log("-------> MAIN! aka document.WHEEL!< -----------")
-    // console.log(e)
-    // console.log(e.target)
-    // console.log(e.target.videoReference)
+    
     if (e.target.clientWidth < 250) {
       console.log("video too small")
-      // e.target.mv_on = true;
       return false
     }
-    // e.preventDefault();
+
+    // Problem: Vids will scroll on 1st mouse wheel event for some reason.
+    // Solutions: This isnt bulletproof, but sorta works at times. Better than an unexpected full scroll imo.
+    const preventStrangeScroll = () => {
+      let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth; //  https://muffinman.io/blog/get-scrollbar-width-in-javascript/
+      let prevPadding = document.body.style.padding
+      let tempPadding = 'calc(' + document.body.style.padding + " " + scrollbarWidth + 'px)'
+  
+      document.body.classList.add("stop-scrolling")
+      document.body.style.paddingRight = tempPadding
+      setTimeout( () => {
+        document.body.classList.remove("stop-scrolling")
+        document.body.style.paddingRight = prevPadding
+      }, 1) // not actually 1ms, some say it's 4ms, others say it will run once the stack is available
+
+    }
+    
+    
     
     if (!document.mv_pause_function && !e.target.mv_on && !e.target.isNotAVideoWrapper) {
       if (e.target.tagName == "VIDEO") {
         e.preventDefault()
-        e.stopPropagation()
+        preventStrangeScroll()
+        
+        console.log("Script - VIDEO - Found video refrence - fast 1")
+        console.log(e.target)
+        // console.log("---------> " , getScrollbarWidth())
+
         setUpElementWithVideo(e, e.target)
-        console.log("Script - Found video refrence - fast 1")
-        return false
+        // document.body.classList.remove("stop-scrolling")
+        return true
       }
       if (e.target.videoReference) {
-        console.log("Script - Found video refrence - fast 2")
-        // console.log(e.target)
-
+        console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
         e.preventDefault();
+        preventStrangeScroll()
+
         setUpElementWithVideo(e, e.target.videoReference)
         return
       }
-      // console.log("Going into for loop ......")
-        console.log("Script - Searching for video refrence - slow 1")
+
+      console.log("Script - Searching for video refrence - slow 1")
 
       for (const vid of document.querySelectorAll("video")) {
         if (vid.clientWidth < 250) {
@@ -429,6 +453,7 @@ function run() {
           && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
         ) {
           e.preventDefault();
+          preventStrangeScroll()
           console.log("Script - Found for video refrence - slow 2")
           setUpElementWithVideo(e, vid)
           
@@ -496,11 +521,14 @@ function run() {
 
 
 function wheel(e, vid) {
-  if (!document.mv_pause_function) {
+  if (document.mv_pause_function) {
+    return
+  }
+  
     console.log("WHEEL EVENT")
-    // console.log(e)
-    // console.log(e.target)
     e.preventDefault();
+    e.stopPropagation();
+
 
     const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
     const delta = e.deltaY;
@@ -553,7 +581,7 @@ function wheel(e, vid) {
         seekVideoByAreas(cX, delta, vid);
       }
     }
-  }
+  
   
 }
 
