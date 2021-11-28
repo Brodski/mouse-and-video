@@ -34,6 +34,9 @@
 
         <label for="volumeRate"></label>
         <input name="volumeRate" type="number" min="-100" max="100" /><br />
+
+        <input id="mute_middle_mouse" name="mute_middle_mouse" type="checkbox"  >
+        <label for="middle_mouse"> Mute with middle mouse click? </label>
       </fieldset>
 
       <br />
@@ -45,18 +48,16 @@
           name="mode"
           value="mode_volume"
         /><label for="mode_volume"> Volume change only</label> <span class="hint_icon" id="volume_hint"> &#128712; </span>
-        
-        
         <br/>
+
     <!-- <input
           id="mode_seek_middle"
           type="radio"
           name="mode"
           value="mode_seek_middle"
-        /><label for="mode_seek_middle"> Simple Skip backward/forward ("Middle" value will be used)</label>  &#128712; </span>
-          
+        /><label for="mode_seek_middle"> Simple Skip backward/forward ("Middle" value will be used)</label>  &#128712; </span>          
           <br /> -->
-    <input
+        <input
           id="mode_seek_only"
           type="radio"
           name="mode"
@@ -84,9 +85,9 @@
         <input id="fullscreen" type="radio" name="popoutSetting" value="fullscreen" />
         <label for="fullscreen" > Fullscreen </label>
         <br/>
-        <input id="newTab" type="radio" name="popoutSetting" value="newTab" />
+        <!-- <input id="newTab" type="radio" name="popoutSetting" value="newTab" />
         <label for="newTab" > New Tab </label>        
-        <br/>
+        <br/> -->
         <input id="disable" type="radio" name="popoutSetting" value="disable" checked />
         <label for="disable" > Disable </label>
         <br />
