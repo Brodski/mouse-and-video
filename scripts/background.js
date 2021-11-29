@@ -1,10 +1,19 @@
+// Development stuff
+function LOG() {
+  // let isDebugging = true;
+  let isDebugging = false;
+  if (isDebugging) {
+    let argz = Array.from(arguments)
+    console.log(... argz)
+  }
+}
+
 let run = true;
 let previousTabIndex;
 let popups = {};
 
 browser.tabs.onActivated.addListener((info) => {
-  console.log("background - activated!")
-  console.log(info)
+  console.log("background - activated!", )
   browser.windows.get(info.windowId).then((window) => {
     if (window.type !== "popup") {
       browser.tabs.get(info.previousTabId).then((tab) => {
@@ -15,16 +24,7 @@ browser.tabs.onActivated.addListener((info) => {
 });
 
 function handlePopUp(message, sender) {
-  console.log("background - creating pop up 1")
-  console.log("background - message=", message)
-  console.log("background - sender.tab.id=", sender.tab.id)
-  console.log("background - previousTabIndex=", previousTabIndex)
     if (message.acao === "criar") { // message.action === create
-      console.log("background - creating popup 2" )
-      // browser.tabs.highlight({
-      //   windowId: sender.tab.windowId,
-      //   tabs: [previousTabIndex],
-      // });
       browser.windows.create({
         width: 370,
         height: 230,
@@ -42,14 +42,10 @@ function handlePopUp(message, sender) {
           top: screen.height - 255,
         });
       });
-      console.log("background - done create")
     } 
     else if (message.acao === "fechar") { // message.action === close
       browser.windows.getCurrent().then((winInfo) => {
-        // Move back to main window
-        
-        console.log("background - in close")
-        console.log("background - in close, winInfo" , winInfo)
+        // Move back to main 
         if (!winInfo || !winInfo.id) {
           return
         }
@@ -70,55 +66,31 @@ function handlePopUp(message, sender) {
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
-  console.log("Background - MSG FROM CONTENT SCRIPT  ---- ", message)
-  console.log("background - sender:")
-  console.log(sender)
-  console.log(sender.tab.windowId)
+  console.log("Background - Recieved message from content script  ---- ", message)
   if (message.showIcon) {
     chrome.pageAction.show(sender.tab.id);
   } 
   else if (message.popup) {
-    console.log("background - POP UP")
     handlePopUp(message, sender)
   } 
-  // else if (message.popoutSetting == "newTab") {
   else if (message.popoutSetting == "fullscreen") {
-    
-  console.log("background - NEW TAB")
-  console.log("background - message.vid")
-  console.log("background - ", message.vid)
+    // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/query
     function onError(error) {
       console.log(`Error: ${error}`);
     }
     function onCreated(tab) {
-      console.log(`Created new tab: `)
-      console.log(tab)
-      console.log(`Created new tab, id=${tab.id}`)
+      console.log(`Created new tab: `, tab)
     }
 
+    
     var creating = browser.tabs.create({
       active: true,
       windowId: sender.tab.windowId,
       url: sender.url,
-      // url:"https://example.org"
     });
     creating.then(()=> {
-      console.log("background - Created new tab-")
       onCreated()
     }, onError);
-
-    // function logTabs(tabs) {
-    //   for (let tab of tabs) {
-    //     console.log("background - QUERYING !!!")
-    //     console.log(tab);
-    //     console.log(tab.url);
-    //   }
-    // }    
-    // let querying = browser.tabs.query({
-    //   active: true,
-    //   currentWindow: true
-    // })
-    // querying.then(logTabs, onError);
 
   }
 
@@ -147,14 +119,10 @@ chrome.pageAction.onClicked.addListener(function (tab) {
   const domain = tab.url.match(
     /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im
   )[0];
-  console.log("background - domain")
-  console.log(domain)
+
   //https://stackoverflow.com/questions/5364062/how-can-i-save-information-locally-in-my-chrome-extension
-
-
   chrome.storage.local.get(domain, function (info) {
     // call back function. info = returned data fromn key "domain"
-    console.log("background - something at local storage ???")
     if (Object.keys(info).length > 0) {
       chrome.storage.local.remove(domain);
       chrome.tabs.sendMessage(tab.id, {

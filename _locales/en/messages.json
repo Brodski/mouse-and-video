@@ -39,8 +39,6 @@
     "message": "Disabled on this site"
   },
 
-
-
   "vonly": {
     "message": "Change volume"
   },
@@ -48,7 +46,6 @@
   "ponly": {
     "message": "Seek backward/forward ('Middle' value will be used)"
   },
-
 
   "both": {
     "message": "Everything"
@@ -73,5 +70,4 @@
   "disable": {
     "message": "Disable"
   }
-
 }

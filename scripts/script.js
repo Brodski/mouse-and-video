@@ -1,7 +1,7 @@
 // Development stuff
 function LOG() {
-  let isDebugging = true;
-  // let isDebugging = false;
+  // let isDebugging = true;
+  let isDebugging = false;
   if (isDebugging) {
     let argz = Array.from(arguments)
     console.log(... argz)
@@ -31,8 +31,6 @@ observer.observe(document, config);
 
 
 
-//            NETFLIX             ///
-//            NETFLIX             ///
 //            NETFLIX             ///
 // Fix netflix seeking issue
 let isNetflix = false;
@@ -235,6 +233,8 @@ stylez.innerHTML = `
     position: absolute;
     height: 14px;
     width: 14px;
+    height: 18px;
+    width: 18px;
     pointer-events: none; 
     opacity: 0;
     filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
@@ -242,7 +242,8 @@ stylez.innerHTML = `
   #icon-wrapper span {
     color: white;
     left: calc(16px + 4px);
-    font-size: 12px;
+    left: calc(18px + 6px);
+    font-size: 14px;
     white-space: nowrap;
   }
   #icon-wrapper svg path {

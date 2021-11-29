@@ -1,6 +1,6 @@
 function LOG() {
-  let isDebugging = true;
-  // let isDebugging = false;
+  // let isDebugging = true;
+  let isDebugging = false;
   if (isDebugging) {
     let argz = Array.from(arguments)
     console.log(... argz)
