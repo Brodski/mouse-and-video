@@ -57,8 +57,6 @@
 		"page": "/html/options.html"
 	},
 
-	"permissions": ["<all_urls>", "storage", "tabs"],
-
-	"web_accessible_resources": ["./icons/seek_ff.svg","./icons/seek_rewind.svg","./icons/vol_decrease.svg","./icons/vol_increase.svg","./icons/vol_mute.svg","./icons/play_speed.svg"]
+	"permissions": ["<all_urls>", "storage", "tabs"]
 
 }

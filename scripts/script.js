@@ -1,9 +1,17 @@
+// Development stuff
+function LOG() {
+    let isDebugging = true;
+  // let isDebugging = false;
+  if (isDebugging) {
+    let argz = Array.from(arguments)
+    console.log(... argz)
+  }
+}
+
+// }
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
-
-
-console.log('++++--- EXTENSION LOADED EVENT  --- ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
-// main2()
+LOG('++++--- EXTENSION LOADED   ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
 const minVideoWidth = 400;
 
 const observer = new MutationObserver(function (mutationList, observer) {
@@ -11,20 +19,46 @@ const observer = new MutationObserver(function (mutationList, observer) {
     chrome.runtime.sendMessage({
       showIcon: true,
     });
-    console.log("MUTATION ----------- Found video, sending ")
-    console.log(mutationList)
-    console.log(observer)
+    LOG("MUTATION ----------- Found video, sending ")
+    LOG(mutationList)
+    LOG(observer)
     observer.disconnect();
   }
 });
 const config = { attributes: true, childList: true, subtree: true };
-// const config = { attributes: false, childList: true, subtree: true };
 observer.observe(document, config);
 
 
+
+
+
+//            NETFLIX             ///
+//            NETFLIX             ///
+//            NETFLIX             ///
+// Fix netflix seeking issue
+let isNetflix = false;
+document.addEventListener("mvNetflix", function (e) {
+  isNetflix = true;
+});
+if (location.href.includes("netflix.com")) {
+  const script = document.createElement("script");
+  script.textContent = `if (netflix){
+    document.dispatchEvent(new CustomEvent('mvNetflix', { isNetflix: true }));
+    document.addEventListener('mvNetflixSeek', function (e) {
+      const player = netflix.appContext.state.playerApp.getAPI().videoPlayer.
+      getVideoPlayerBySessionId(netflix.appContext.state.playerApp.getAPI().
+      videoPlayer.getAllPlayerSessionIds()[0])
+      player.seek(e.detail)
+    })
+  }`;
+  (document.head || document.documentElement).appendChild(script);
+  script.remove();
+}
+
+
+// iframe stuff and pop up stuff
 window.addEventListener( "message", (e) => {
-    // console.log('recieved some message e', e)
-    console.log('recieved some message e.data', e.data)
+    LOG('recieved some message e.data', e.data)
     if (e.data.mv_topIframe) {
       // Tell the top window which iframe to move
       window.top.postMessage({ mv_iframeSrc: window.location.href }, "*");
@@ -32,7 +66,7 @@ window.addEventListener( "message", (e) => {
 
     if (window.location === window.parent.location) {
       if (e.data.mv_iframeSrc) {
-        console.log("gonna pop up!")
+        LOG("gonna pop up!")
         document.mv_popup_element = document.querySelector(`iframe[src="${e.data.mv_iframeSrc}"`);
         document.documentElement.style.overflow = "hidden";
         document.mv_popup_element.className += " popup_style";
@@ -51,15 +85,14 @@ window.addEventListener( "message", (e) => {
       }
     }
 });
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /* Receive messages from background script */
+/* Kicks off javascript to run the usefull stuff of this extension's purpose */
 chrome.runtime.onMessage.addListener(function (message) {
-  console.log("Content Script - MSG FROM BACKGROUND -", message)
+  LOG("Content Script - MSG FROM BACKGROUND -", message)
   if (message.run) {
     run();
   } else if (message.disabled) {
@@ -72,22 +105,17 @@ chrome.runtime.onMessage.addListener(function (message) {
 let mvObject = {};
 
 chrome.storage.local.get(function (options) {
-  console.log("Scripts - options.mute_middle_mouse", options.mute_middle_mouse)
-  console.log("Scripts - options", options)
+  LOG("Scripts - options", options)
   mvObject = {
     left:       options.left          || 5,
     middle:     options.middle        || 2,
     right:      options.right         || 10,
     mode:       options.mode          || "mode_everything",
-    // pip:        options.pip           || true,
-    // newTab:     options.newTab        || false, // does nothing
     volumeRate: options.volumeRate    || 6,
     mute_middle_mouse: options.mute_middle_mouse    || true,
-
     brightness: 1,
     volume:     0,
     popoutSetting: options.popoutSetting || "disable",
-    // disable newTab fullscreen  pip
 
     popup: (action, activatePopupTab) => {
       chrome.runtime.sendMessage({
@@ -104,13 +132,6 @@ chrome.storage.local.get(function (options) {
   };
 });
 
-
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-
 /* Get the top-most iframe in case the video is deep inside nested iframes.
 Then we gonna send a message to this iframe which will itself send another message
 to the top window with its 'src'.
@@ -124,42 +145,19 @@ function getTopIframe(win) {
 
 // Update values if user changes them in the options
 chrome.storage.onChanged.addListener(function (changes) {
-  console.log("Updating script values...")
-  console.log("changes", changes)
-  // console.log("Object.keys(changes)", Object.keys(changes))
-  // console.log("changes[Object.keys(changes)[0]] ", changes[Object.keys(changes)[0]] )
+  LOG("Updating script values...")
+  LOG("changes", changes)
+  // LOG("changes[Object.keys(changes)[0]] ", changes[Object.keys(changes)[0]] )
   mvObject[Object.keys(changes)[0]] = changes[Object.keys(changes)[0]].newValue;
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
  // convert img with src to svg
  // https://dev.to/luisaugusto/how-to-convert-image-tags-with-svg-files-into-inline-svg-tags-3jfl
 function convertImages(myIconsDict, callback) {
-  // const images = document.querySelectorAll(query);
   for (const key in myIconsDict) {
-    // console.log(`${key}: ${myIconsDict[key]}`);
-    // console.log(myIconsDict[key]);
     image = myIconsDict[key]
     fetch(image.src)
     .then(res => res.text())
@@ -170,13 +168,14 @@ function convertImages(myIconsDict, callback) {
       if (image.id) svg.id = image.id;
       if (image.className) svg.classList = image.classList;
 
-      // image.parentNode.replaceChild(svg, image);
       myIconsDict[key] = svg
     })
     .then(callback)
     .catch(error => console.error(error))
   }
 }
+
+let iconsDict = {}
 function setupIcons() {
   
   let iconWrapper = document.createElement("div");
@@ -187,6 +186,7 @@ function setupIcons() {
   let vol_decrease = document.createElement("img");
   let vol_increase = document.createElement("img");
   let vol_mute = document.createElement("img");
+  let vol_sound = document.createElement("img");
   let play_speed = document.createElement("img");
 
   seek_ff.src = browser.runtime.getURL("../icons/seek_ff.svg")
@@ -194,6 +194,7 @@ function setupIcons() {
   vol_decrease.src = browser.runtime.getURL("../icons/vol_decrease.svg")
   vol_increase.src = browser.runtime.getURL("../icons/vol_increase.svg")
   vol_mute.src = browser.runtime.getURL("../icons/vol_mute.svg")
+  vol_sound.src = browser.runtime.getURL("../icons/vol_sound.svg")
   play_speed.src = browser.runtime.getURL("../icons/play_speed.svg")
 
   seek_ff.id = "seek_ff"
@@ -201,6 +202,7 @@ function setupIcons() {
   vol_decrease.id = "vol_decrease"
   vol_increase.id = "vol_increase"
   vol_mute.id = "vol_mute"
+  vol_sound.id = "vol_sound"
   play_speed.id = "play_speed" 
   
   // From dryicons
@@ -209,17 +211,11 @@ function setupIcons() {
   iconsDict["vol_decrease"] = vol_decrease;
   iconsDict["vol_increase"] = vol_increase;
   iconsDict["vol_mute"] = vol_mute;
+  iconsDict["vol_sound"] = vol_sound;
   iconsDict["play_speed"] = play_speed;
   document.body.append(iconWrapper)
   convertImages(iconsDict, ()=>{} )
 }
-
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-///////////////                                ///////////////                         ///////////////
-
 
 function setupStyles() {
   let stylez = document.createElement("style");
@@ -243,8 +239,7 @@ function setupStyles() {
       pointer-events: none; 
       opacity: 0;
       filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
-    }
-    
+    }    
     #icon-wrapper span {
       color: white;
       left: calc(16px + 4px);
@@ -253,8 +248,7 @@ function setupStyles() {
     }
     #icon-wrapper svg path {
       fill: white;
-    }
-    
+    }    
     .fade-icon-out, 
     .fade-icon-out svg, 
     .fade-icon-out span {
@@ -278,68 +272,49 @@ function setupStyles() {
   `
 }
 
-document.addEventListener('click', event => {
-  // console.log("Click", event)
-  // console.log("Click detail:" + event.detail)
-  // console.log("Click target:" + event.target)
-  // console.log(event.target)
-  // console.log("Click offsetleft:" + event.target.offsetLeft)
-  // console.log("Click offsetHeight:" + event.target.offsetHeight)
-  // console.log("Click button:" + event.button)
-  // vidz[0].parentElement.querySelectorAll("video")
-});
-
-function getAllSiblings(ele) {
-  let siblings = [ele]
-  let tempEle = ele
-  
-  // while (tempEle.previousSibling) {
-  while (tempEle.previousElementSibling) {
-    siblings.push(tempEle.previousElementSibling)
-    tempEle = tempEle.previousElementSibling
-  }
-  tempEle = ele
-  while (tempEle.nextElementSibling) {
-    siblings.push(tempEle.nextElementSibling)
-    tempEle = tempEle.nextElementSibling
-  }
-  return siblings
-}
-
 
 function getAllWrapingEles(vid, ancestor) {
-  if (vid.clientWidth < minVideoWidth) {
-    console.log("video too small")
-    // e.target.mv_on = true;
+  if (vid.clientWidth < minVideoWidth) { // video too small
     return false
   }
+  function getAllSiblings(ele) {
+    let siblings = [ele]
+    let tempEle = ele
+    
+    while (tempEle.previousElementSibling) {
+      siblings.push(tempEle.previousElementSibling)
+      tempEle = tempEle.previousElementSibling
+    }
+    tempEle = ele
+    while (tempEle.nextElementSibling) {
+      siblings.push(tempEle.nextElementSibling)
+      tempEle = tempEle.nextElementSibling
+    }
+    return siblings
+  }
+  
   let allWrappingEles = getAllSiblings(ancestor)
-  console.log(allWrappingEles)
-  console.log("==> getAllWrapingEles()")
-  console.log("THE VID")
-  console.log(vid)
-  console.log("vvvvvvvvvvvvvvvvvvvvvvvvvvvv")
-  console.log("vid.width=" + vid.getBoundingClientRect().width )
-  console.log("vid.height="+ vid.getBoundingClientRect().height)  
-  console.log("vid.offsetLeft=" + vid.offsetLeft )
-  console.log("vid.offsetHeight="+ vid.offsetHeight )  
-  console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+  // LOG(allWrappingEles)
+  // LOG("==> getAllWrapingEles()")
+  // LOG("THE VID")
+  // LOG(vid)
+  // LOG("vvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+  // LOG("vid.width=" + vid.getBoundingClientRect().width )
+  // LOG("vid.height="+ vid.getBoundingClientRect().height)  
+  // LOG("vid.offsetLeft=" + vid.offsetLeft )
+  // LOG("vid.offsetHeight="+ vid.offsetHeight )  
+  // LOG("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
   for ( let ele of allWrappingEles) {
-    console.log(ele)
-    console.log(ele.getBoundingClientRect())
     if (vid.getBoundingClientRect().width == ele.getBoundingClientRect().width  
       && vid.getBoundingClientRect().height == ele.getBoundingClientRect().height
       && vid.offsetLeft == ele.offsetLeft
       && vid.offsetHeight == ele.offsetHeight)  {
-        // ancestor.candidates ? ancestor.candidates.push(vid) :  ancestor.candidates = [vid]
-        console.log(" ✔✔✔✔✔ Adding candidate")
+        LOG(" ✔✔✔✔✔ Adding candidate")
         ele.videoReference = vid
-        // console.log(ancestor.candidates)
     } else {
-      console.log(" X X X X NOT adding candidate")
+      LOG(" X X X X NOT adding candidate")
     }
   }
-  // console.log(ancestor.candidates)
 
 
 }
@@ -347,8 +322,6 @@ function getAllWrapingEles(vid, ancestor) {
 function getAllWrapingElesAux() {
   let i = 0;
   for (const vid of document.querySelectorAll("video")) {
-    // console.log("---- ", i, " ----")
-    // console.log("vid: ", vid)
     getAllWrapingEles(vid, vid.parentElement )
     i++
   }
@@ -356,7 +329,7 @@ function getAllWrapingElesAux() {
 
 function setUpElementWithVideo(e, vid) {
   e.preventDefault()
-  console.log("Setting up Element with video ....... start 1 ")
+  LOG("Setting up Element with video ....... start 1 ")
   document.mv_popup_element = vid;
 
   
@@ -372,32 +345,30 @@ function setUpElementWithVideo(e, vid) {
   // Attach the onwheel function and then dispatch it.
   e.target.onwheel = (e) => wheel(e, vid);
   document.pvwm = e.target;
-  console.log("Setting up Element with video ....... complete 2")
+  LOG("Setting up Element with video ....... complete 2")
   wheel(e, vid);
 }
 
+// When we scroll the wheel an event is fired from the cursor position. We check if the cursor is ontop of a video.
+// Sometimes elements are wrapping the video such that the event (specifically, event.target) won't 'see' the <video>
+// element and instead see the wrapper.
+function getVidIfPresent(e) {
+  LOG("SHORTCUT FINDER!")
 
-
-function getSection(e) {
-  console.log("SHORTCUT FINDER!")
-  
-  // if (document.mv_pause_function || e.target.mv_on || e.target.isNotAVideoWrapper) {
-  //   return { "shortcut": "occupied"}
-  // }
-  if (!document.mv_pause_function && !e.target.mv_on && !e.target.isNotAVideoWrapper) {
+  // if (!document.mv_pause_function && !e.target.mv_on && !e.target.isNotAVideoWrapper) {
+  if (!document.mv_pause_function && !e.target.isNotAVideoWrapper) {
     if (e.target.tagName == "VIDEO") {
-      console.log("SHORTCUT FINDER - vidElement")
+      LOG("SHORTCUT FINDER - vidElement")
       return { "type": "videoElement"}
     }
     if (e.target.videoReference) {
-      console.log("SHORTCUT FINDER - videoReference")
-      return { "type": "videoReference" }
-      
+      LOG("SHORTCUT FINDER - videoReference")
+      return { "type": "videoReference" }      
     }
     
     for (const vid of document.querySelectorAll("video")) {
       if (vid.clientWidth < minVideoWidth) {
-        console.log(".....video too small")
+        LOG(".....video too small")
         continue
       }
       
@@ -407,44 +378,37 @@ function getSection(e) {
         && e.clientX >= vid.getBoundingClientRect().x 
         && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
       ) {
-        console.log("SHORTCUT FINDER - longsearch")
+        LOG("SHORTCUT FINDER - longsearch")
         return { "type": "longSearch", "vid": vid  }
       }
     }
-    e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... Granted very little
-    console.log("SHORTCUT FINDER - nothing")
-      // return {  "type" : null }
+    e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... a little
+    LOG("SHORTCUT FINDER - nothing")
   }
 }
 
 
 
 
-
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
-let iconsDict = {}
 function run() {
-  console.log("!!!!!! IN RUN !!!!!!")
+  LOG("!!!!!! IN RUN !!!!!!")
   getAllWrapingElesAux() 
   setupStyles()
   setupIcons()
   window.addEventListener('wheel', main);
-  
-
-
+  window.addEventListener('mousedown', muteMiddleClick)
 
 
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
-    console.log("-------> MAIN! aka document.WHEEL!< -----------")
-    
-    
-    if (e.target.clientWidth < minVideoWidth) {
-      console.log("video too small")
+    LOG("-------> MAIN! aka document.WHEEL!< -----------")
+        
+    if (e.target.clientWidth < minVideoWidth || e.target.mv_on == true) {
       return false
     }
 
@@ -464,84 +428,69 @@ function run() {
 
     }
     
-    
-    let shortcut = getSection(e)
+    // This section could be better (A)
+    let shortcut = getVidIfPresent(e)
+    let vid = null
     if ( shortcut == null ) {
-      console.log("Sscript - VIDEO NULL - nothing ")
+      LOG("Script - VIDEO NULL - nothing ")
       return
     }    
     if ( shortcut.type == "videoElement" ) {
-      console.log("Script - VIDEO - Found video refrence - fast 1")
-      e.preventDefault()
-      preventStrangeScroll()
-      setUpElementWithVideo(e, e.target)
-      return
+      vid = e.target
+      LOG("Script - VIDEO - Found video refrence - fast 1")
     }
     if ( shortcut.type == "videoReference" ) {
-      console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
-      e.preventDefault();
-      preventStrangeScroll()
-      setUpElementWithVideo(e, e.target.videoReference)
-      return
+      vid = e.target.videoReference
+      LOG("Script - VIDEOREFERENCE - Found video refrence - fast 2")
     }
     if ( shortcut.type == "longSearch") {
-      console.log("Script - Found for video refrence - slow 2")
-      e.preventDefault();
+      vid = shortcut.vid
+      LOG("Script - Found for video refrence - slow 2")
+    }
+    if ( vid != null) {
       preventStrangeScroll()
-      setUpElementWithVideo(e, shortcut.vid)
+      setUpElementWithVideo(e, vid)
+    }
+
+  }
+
+  
+  function muteMiddleClick(e) {
+    // If we already computed it, or not a middle mouse click, or if element is too small
+    if ( e.target.mute_on || e.button != 1 || e.target.clientWidth < minVideoWidth ) {
       return
     }
 
-    
-    // if (!document.mv_pause_function && !e.target.mv_on && !e.target.isNotAVideoWrapper) {
-    //   console.log("Script - VIDEO - START")
-    //   if (e.target.tagName == "VIDEO") {
-    //     e.preventDefault()
-    //     preventStrangeScroll()
-    //     console.log("Script - VIDEO - Found video refrence - fast 1")
-    //     console.log(e.target)
 
-    //     setUpElementWithVideo(e, e.target)
-    //     return true
-    //   }
-    //   if (e.target.videoReference) {
-    //     console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
-    //     e.preventDefault();
-    //     preventStrangeScroll()
+    let shortcut = getVidIfPresent(e) 
+    let vid = null
+    if ( shortcut == null ) {
+      LOG("Script - MUTE NULL - nothing ")
+      return
+    }    
 
-    //     setUpElementWithVideo(e, e.target.videoReference)
-    //     return
-    //   }
-
-    //   console.log("Script - Searching for video refrence - slow 1")
-
-    //   for (const vid of document.querySelectorAll("video")) {
-    //     if (vid.clientWidth < 250) {
-    //       console.log(".....video too small")
-    //       continue
-    //     }
-       
-    //     if (
-    //       // !vid.paused &&
-    //       e.clientY >= vid.getBoundingClientRect().y 
-    //       && e.clientY <= vid.getBoundingClientRect().y + vid.clientHeight 
-    //       && e.clientX >= vid.getBoundingClientRect().x 
-    //       && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
-    //     ) {
-    //       e.preventDefault();
-    //       preventStrangeScroll()
-    //       console.log("Script - Found for video refrence - slow 2")
-    //       setUpElementWithVideo(e, vid)
-          
-    //       break;
-    //     } else {
-    //       console.log("Script - Slow X-2", e.target)
-    //       e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... Granted very little
-    //     }
-    //   }
-    // }
+  // This section could be better (B)
+    if ( shortcut.type == "videoElement" ) {
+      LOG("Script - MUTE NULL - videoElement ")
+      vid = e.target
+    }
+    if ( shortcut.type == "videoReference" ) {
+      LOG("Script - MUTE NULL - videoReference ")
+      vid = e.target.videoReference
+    }
+    if ( shortcut.type == "longSearch") {
+      LOG("Script - MUTE NULL - longSearch ")
+      vid = shortcut.vid
+    }
+    if (vid != null) {
+      LOG("Script - MUTE DOING SOMETHING - GOGOG ")
+      e.preventDefault()
+      e.target.mute_on = true;
+      e.target.addEventListener('mousedown', (e) => { doMute(e, vid) })
+      doMute(e, vid)
+    }
+      
   }
-   
 }
 
 
@@ -561,34 +510,6 @@ function run() {
 
 
 
-
-
-
-
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
-//////////////////////////////////////
 
 
 
@@ -597,65 +518,62 @@ function run() {
 
 function wheel(e, vid) {
   if (document.mv_pause_function) {
-    console.log("WHEELPAUSE FUNCTION")
+    LOG("WHEELPAUSE FUNCTION")
     return
-  }
-  
-    console.log("WHEEL EVENT")
-    e.preventDefault();
-    e.stopPropagation();
+  }  
+  LOG("WHEEL EVENT")
+  e.preventDefault();
+  e.stopPropagation();
 
+  const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
+  const delta = e.deltaY;
 
-    const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
-    const delta = e.deltaY;
+  if (e.shiftKey) {
+    setBrightness(delta, vid);
+    return
+  } 
 
-    if (e.shiftKey) {
-      setBrightness(delta, vid);
-      return
-    } 
+  LOG("MODE: ", mvObject.mode)
 
-    console.log("MODE: ", mvObject.mode)
+  // Change time position
+  if (mvObject.mode === "mode_seek_middle") {          
+    LOG("-------> SKIP 1")
+    vid.currentTime += getIncrement(delta, mvObject.middle);
 
-    // Change time position
-    if (mvObject.mode === "mode_seek_middle") {          
-      console.log("-------> SKIP 1")
-      vid.currentTime += getIncrement(delta, mvObject.middle);
+  // Skip only
+  } else if (mvObject.mode === "mode_seek_only") {          
+    LOG("-------> SKIP 2")
+    seekVideoByAreas(cX, delta, vid);
 
-    // Skip only
-    } else if (mvObject.mode === "mode_seek_only") {          
-      console.log("-------> SKIP 2")
-      seekVideoByAreas(cX, delta, vid);
+  // Volume only
+  } else if (mvObject.mode === "mode_volume") {
+    LOG("-------> VOLUME")
+    changeVolume(delta, vid);
 
-    // Volume only
-    } else if (mvObject.mode === "mode_volume") {
-      console.log("-------> VOLUME")
-      changeVolume(delta, vid);
+  // Default to Everything mode (volume, seek)
+  } else { // mvObject.mode ===  mode_everything
 
-    // Default to Everything mode (volume, seek)
-    } else { // mvObject.mode ===  mode_everything
+    // bottom half
+    if (e.offsetY <= vid.clientHeight / 2) {
+      if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {        
+        LOG("-------> POP UP")
+        controlPopoutEvent({delta, vid, e})
 
-      // bottom half
-      if (e.offsetY <= vid.clientHeight / 2) {
-        if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {
-          
-          console.log("-------> POP UP")
-          controlPopoutEvent({delta, vid, e});
-
-        } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {  
-          console.log("-------> SPEED")
-          changePlaybackRate(delta, vid);
-        } else {  
-          console.log("-------> VOLUME 2")
-          changeVolume(delta, vid);
-        }
-
-      // top half
-      } 
-      else { 
-        console.log("-------> SKIP 3")
-        seekVideoByAreas(cX, delta, vid);
+      } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {  
+        LOG("-------> SPEED")
+        changePlaybackRate(delta, vid);
+      } else {  
+        LOG("-------> VOLUME 2")
+        changeVolume(delta, vid);
       }
+
+    // top half
+    } 
+    else { 
+      LOG("-------> SKIP 3")
+      seekVideoByAreas(cX, delta, vid);
     }
+  }
   
   
 }
@@ -677,30 +595,15 @@ function wheel(e, vid) {
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-// HERE
+
+// Rewind, fast forward, volume up, volume down, and mute all below in next few methods
 function displayIcon(iconName, msg, video) {
 
-
   let span = document.createElement("span")
-  // span.innerText = getText(iconName) //video.volume.toFixed(2);
   span.innerText = msg
 
   // put the element on the screen, then give a fade away styling
   let iconWrapper = document.getElementById("icon-wrapper")  
-  // iconWrapper.innerHTML = iconsDict["vol_increase"].outerHTML + span.outerHTML
   iconWrapper.innerHTML = iconsDict[iconName].outerHTML + span.outerHTML
   iconWrapper.classList.remove("fade-icon-out")
   iconWrapper.classList.add("fade-icon-out")
@@ -715,30 +618,17 @@ function displayIcon(iconName, msg, video) {
   document.body.appendChild(iconWrapper);
 }
 
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-
-
-
-
-
+function doMute(e, vid) { 
+  if ( e.button == 1 ) {
+    e.preventDefault();
+    vid.muted = !vid.muted 
+    vid.muted == true ? displayIcon("vol_mute", "", vid) :  displayIcon("vol_sound", "", vid)
+  }
+}
 function changeVolume(delta, video) {
-  console.log("Script - VOLUME - volume change")
-  console.log("Script - VOLUME - video.volume=", video.volume)
-  console.log("Script - VOLUME - video.muted=", video.muted)
+  LOG("Script - VOLUME - volume change")
   if (video.muted) {
     video.muted = false;
-    // video.volume = video.volume; // ???????????
-    // if (video.volume != 0) { video.volume = video.volume } 
-    console.log("Script - VOLUME POST- video.volume=", video.volume)
-    console.log("Script - VOLUME POST- video.muted=", video.muted)
-    // video.volume = 0;
   }
 // HERE 
   if (delta < 0) {
@@ -764,25 +654,6 @@ function changeVolume(delta, video) {
   video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
 }
 
-
-
-
-
-
-
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-///////////////                                                         ///////////////
-
-
-// HERE
 function changePlaybackRate(delta, video) {
   let firstMov = delta;
   setTimeout( function (mov) {
@@ -798,7 +669,8 @@ function changePlaybackRate(delta, video) {
   video.playbackRate = playback;
 }
 
-// HERE
+
+
 function seekVideoByAreas(cX, delta, video) {
   let seekTo = video.currentTime;
   let rate;
@@ -831,10 +703,10 @@ function seekVideoByAreas(cX, delta, video) {
     let hours = Math.floor((seekTo2 / 3600)) 
     let time = null;
     if (seekTo >= 3600) { // 1 hour = 60 * 60
-      time = hours + ":" + neet2Digits(minutes - 60*hours) + ":" + neet2Digits(seconds)
+      time = hours + ":" + neet2Digits(minutes - 60*hours) + ":" + neet2Digits(seconds) // ex) 1:23:45
     }
     else {
-      time = neet2Digits(minutes) + ":" + neet2Digits(seconds)
+      time = neet2Digits(minutes) + ":" + neet2Digits(seconds) // ex) 01:23
     }
     rate = delta < 0 ? "+" + rate :  "-" + rate
     delta < 0 ? displayIcon("seek_ff", `${time} (${rate}) `, video) : displayIcon("seek_rewind", `${time} (${rate})`, video)    
@@ -844,8 +716,6 @@ function seekVideoByAreas(cX, delta, video) {
     document.dispatchEvent( new CustomEvent("mvNetflixSeek", { detail: parseInt(seekTo) * 1000 }) ); // milliseconds
   } 
 }
-
-
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
@@ -856,17 +726,9 @@ function seekVideoByAreas(cX, delta, video) {
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
-
-
-
-
-
-
-
-// about:config
-// => media.mediasource.enabled = false
-
-
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
+///////////////                                                         ///////////////
 
 
 
@@ -875,31 +737,28 @@ function seekVideoByAreas(cX, delta, video) {
 
 
 
-// Junk
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
-// Shitty pop up
+
+
+
+
+
+
+
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
+//  pop up
 function close_popup(activatePopupTab) {
-  console.log("===============> CLOSING IT")
-  console.log("===============> CLOSING IT")
-  console.log("===============> CLOSING IT")
-  console.log("===============> CLOSING IT")
-  console.log("===============> CLOSING IT")
+  LOG("===============> CLOSING POP UP")
   document.mv_playing_on_popup = false;
 
   // Pause execution of the wheel function while transitioning out of popup
@@ -927,6 +786,7 @@ function close_popup(activatePopupTab) {
   // Remove play/pause onclick event
   document.mv_popup_element.onclick = null;
   document.mv_popup_element.classList.remove("popup_style");
+
   // Place video back in original position
   document.mv_placeholder.insertAdjacentElement("afterend",document.mv_popup_element);
 
@@ -938,13 +798,12 @@ function close_popup(activatePopupTab) {
 }
 
 function open_popup(isFullscreen) {
-  console.log("IN OPEN POPUP")
+  LOG("IN OPEN POPUP")
   if (document.mv_playing_on_popup) {
-    console.log("open_popup - going to clsoe it 1")
+    LOG("open_popup - going to clsoe it 1")
     close_popup(false);
   } 
   else if (!document.mv_playing_on_popup) {
-    console.log("open_popup - yeah in")
     document.mv_playing_on_popup = true;
 
     // Pause execution of the wheel function while transitioning to popup
@@ -954,12 +813,9 @@ function open_popup(isFullscreen) {
 
     document.mv_popup_element.className += " popup_style";
     document.body.insertBefore( document.mv_popup_element,document.body.firstChild );
-    console.log("open_popup - open pop up controls")
-    console.log(document.mv_popup_element.controls)
-    console.log(document.mv_popup_element.controls)
     document.mv_popup_element.defaultControls = document.mv_popup_element.controls
     document.mv_popup_element.controls = true
-    // vidz[0].controls = true
+    
     // Add an event listener to play/pause video when clicking on it
     document.mv_popup_element.onclick = () => {
       !document.mv_popup_element.paused ? document.mv_popup_element.pause() : document.mv_popup_element.play();
@@ -974,7 +830,7 @@ function open_popup(isFullscreen) {
       // The page is in an iframe
       getTopIframe(window).postMessage({ mv_topIframe: true }, "*");
     } else {
-      console.log("open_popup - Sending message to background script")
+      LOG("open_popup - Sending message to background script")
       if(!isFullscreen) { mvObject.popup("criar") };
       document.body.onfullscreenchange = null;
     }
@@ -991,81 +847,53 @@ function setBrightness(delta, vid) {
 }
 
 async function controlPopoutEvent(data) {
-  console.log("1 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
-  let d2 = { ... data }
+  LOG("1 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
+  
   let {delta, vid, e} = data
-  // console.log("delta, vid, e and data:")
-  // console.log(delta)
-  // console.log(vid)
-  // console.log(e)
-  // console.log(data)
-  console.log("controlPopoutEvent - mvObject")
-  console.log(mvObject)
-  console.log("controlPopoutEvent - mvObject.popoutseting=", mvObject.popoutSetting)
+  
   if (mvObject.popoutSetting == "pip"){
-    console.log("controlPopoutEvent - GOING IN POP UP")
+    LOG("controlPopoutEvent - GOING IN POP UP")
     activatePopupFeature(delta, vid, e)
   }
-  if (mvObject.popoutSetting == "newTab"){
-
-    // activateNewTab(delta, vid, e)
-    console.log("controlPopoutEvent - GOING IN NEW TAB")
-    console.log("controlPopoutEvent - VID")
-    console.log(vid)
-    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
-    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
-    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
-    console.log("controlPopoutEvent - NEW TAB HAS BEEN DISABLED")
-  }
   if (mvObject.popoutSetting == "fullscreen"){
-    activateFullScreen(delta, vid, e)
+    activateFullScreen()
   }
   if (mvObject.popoutSetting == "disabled"){
     // do nothing
   }
-  console.log("2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
+  LOG("2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
 }
 
 
-function activateFullScreen(delta, vid, e) {
-  console.log(" ???????????? activiating fullscreen")
+function activateFullScreen() {
   open_popup(true);
 }
 
 function activatePopupFeature(delta, vid, e) {
   if (delta > 0) {
-    console.log(" activatePopupFeature- !!!")
-    console.log(" activatePopupFeature- delta is positive", delta)
-    console.log(" activatePopupFeature - mv_playing_on_popup", document.mv_playing_on_popup)
-    console.log(" activatePopupFeature- fullscreenElement", document.fullscreenElement)
     // Close popup and stay on the current tab
     if (document.mv_playing_on_popup) {
-      console.log("open +1")
+      LOG("open +1")
       close_popup(false);
     } else {
       // The popup must open only when the video is not in fullscreen mode.
       if (document.fullscreenElement) {
-        console.log("open +2")
+        LOG("open +2")
         document.exitFullscreen();
 
         // We need this so that when the user scrolls out of fullscreen the popup doesn't open up unwantedly
         document.mv_pause_function = true;
         setTimeout(() => { document.mv_pause_function = false;}, 500);
       } else {
-        console.log("open +3")
+        LOG("open +3")
         open_popup();
       }
     }
   } else if (delta < 0) {
-    console.log(" activatePopupFeature- !!!")
-    console.log(" activatePopupFeature - delta is negative", delta)
-    console.log(" activatePopupFeature- mv_playing_on_popup", document.mv_playing_on_popup)
-    console.log(" activatePopupFeature -fullscreenElement", document.fullscreenElement)
+    LOG(" activatePopupFeature- !!!")
     // Close popup and move to the tab playing the video
     if (document.mv_playing_on_popup) {
-      console.log("close -1")
-      // close_popup(true);
-      // console.log("close -1.5 - going to clsoe it 1")
+      LOG("close -1")
       close_popup(false);
     
     } else {
@@ -1073,7 +901,7 @@ function activatePopupFeature(delta, vid, e) {
         (function (x) {
           setTimeout(function () {
             if (document.fullscreenElement == null) {
-              console.log("close -2")
+              LOG("close -2")
               const attribs = [ ...document.elementsFromPoint(e.x, e.y)
                   .filter( (el) => (el.contains(vid) && el.clientWidth === e.target.clientWidth) || el.clientHeight === e.target.clientHeight )
                   .pop()
@@ -1089,7 +917,7 @@ function activatePopupFeature(delta, vid, e) {
                 )
                 .filter( (attrib) => attrib.ownerElement.clientWidth !== x.clientWidth && attrib.ownerElement.clientHeight !== x.clientHeight );
                 
-              console.log("close -2.1", attribs)
+              LOG("close -2.1", attribs)
               for (const x of attribs) {
                 try {
                   if (document.fullscreenElement == null)
@@ -1107,55 +935,4 @@ function activatePopupFeature(delta, vid, e) {
       }
     }
   }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-//            NETFLIX             ///
-// Fix netflix seeking issue
-let isNetflix = false;
-document.addEventListener("mvNetflix", function (e) {
-  isNetflix = true;
-});
-if (location.href.includes("netflix.com")) {
-  const script = document.createElement("script");
-  script.textContent = `if (netflix){
-    document.dispatchEvent(new CustomEvent('mvNetflix', { isNetflix: true }));
-    document.addEventListener('mvNetflixSeek', function (e) {
-      const player = netflix.appContext.state.playerApp.getAPI().videoPlayer.
-      getVideoPlayerBySessionId(netflix.appContext.state.playerApp.getAPI().
-      videoPlayer.getAllPlayerSessionIds()[0])
-      player.seek(e.detail)
-    })
-  }`;
-  (document.head || document.documentElement).appendChild(script);
-  script.remove();
 }
