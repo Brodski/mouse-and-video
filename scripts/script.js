@@ -1,7 +1,8 @@
+
 // Development stuff
 function LOG() {
-  // let isDebugging = true;
-  let isDebugging = false;
+  let isDebugging = true;
+  // let isDebugging = false;
   if (isDebugging) {
     let argz = Array.from(arguments)
     console.log(... argz)
@@ -10,22 +11,51 @@ function LOG() {
 
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
-LOG('++++--- EXTENSION LOADED   ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
+LOG('++++--- EXTENSION LOADED 123  ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
 const minVideoWidth = 400;
 
-const observer = new MutationObserver(function (mutationList, observer) {
-if (document.querySelector("video")) {
-  chrome.runtime.sendMessage({
-    showIcon: true,
-  });
-  LOG("MUTATION ----------- Found video, sending ")
-  LOG(mutationList)
-  LOG(observer)
-  observer.disconnect();
-}
-});
-const config = { attributes: true, childList: true, subtree: true };
-observer.observe(document, config);
+
+(function () {
+  LOG("GO!")
+  // window.addEventListener('DOMContentLoaded', (event) => {
+    if (document.querySelector("video")) {
+      chrome.runtime.sendMessage({
+        showIcon: true,
+      });
+    }
+    else {
+      const observer = new MutationObserver(function (mutationList, observer) {
+        if (document.querySelector("video")) {
+          chrome.runtime.sendMessage({
+            showIcon: true,
+          });
+          LOG("MUTATION ----------- Found video, sending ")
+          LOG(mutationList)
+          LOG(observer)
+          observer.disconnect();
+        }
+      });
+      const config = { attributes: true, childList: true, subtree: true };
+      observer.observe(document, config);
+    }
+  // })
+}())
+  
+// const observer = new MutationObserver(function (mutationList, observer) {
+//   LOG("MUTATION - 1")
+//   if (document.querySelector("video")) {
+//     LOG("MUTATION - found a video")
+//     chrome.runtime.sendMessage({
+//       showIcon: true,
+//     });
+//     LOG("MUTATION ----------- Found video, sending ")
+//     LOG(mutationList)
+//     LOG(observer)
+//     observer.disconnect();
+//   }
+// });
+// const config = { attributes: true, childList: true, subtree: true };
+// observer.observe(document, config);
 
 
 
@@ -55,7 +85,7 @@ if (location.href.includes("netflix.com")) {
 
 // iframe stuff and pop up stuff
 window.addEventListener( "message", (e) => {
-  LOG('recieved some message e.data', e.data)
+  LOG('recieved some message e.data')
   if (e.data.mv_topIframe) {
     // Tell the top window which iframe to move
     window.top.postMessage({ mv_iframeSrc: window.location.href }, "*");
@@ -211,65 +241,64 @@ iconsDict["vol_mute"] = vol_mute;
 iconsDict["vol_sound"] = vol_sound;
 iconsDict["play_speed"] = play_speed;
 document.body.append(iconWrapper)
-convertImages(iconsDict, ()=>{} )
+  convertImages(iconsDict, ()=>{} )
 }
 
 function setupStyles() {
-let stylez = document.createElement("style");
-document.body.append(stylez)
-stylez.innerHTML = `
-  .volume-icon {
-    position: absolute;
-    display: inline-flex;
-  }
-  #icon-wrapper {
-    position: absolute;
-    z-index: 999;
-  }
+  let stylez = document.createElement("style");
+  document.body.append(stylez)
+  stylez.innerHTML = `
+    .volume-icon {
+      position: absolute;
+      display: inline-flex;
+    }
+    #icon-wrapper {
+      position: absolute;
+      z-index: 999;
+    }
 
-  #icon-wrapper svg,
-  #icon-wrapper img,
-  #icon-wrapper span {
-    position: absolute;
-    height: 14px;
-    width: 14px;
-    height: 18px;
-    width: 18px;
-    pointer-events: none; 
-    opacity: 0;
-    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
-  }    
-  #icon-wrapper span {
-    color: white;
-    left: calc(16px + 4px);
-    left: calc(18px + 6px);
-    font-size: 14px;
-    white-space: nowrap;
-  }
-  #icon-wrapper svg path {
-    fill: white;
-  }    
-  .fade-icon-out, 
-  .fade-icon-out svg, 
-  .fade-icon-out span {
-    animation: fadeOut ease 1.75s;
-  }
-  @keyframes fadeOut {
-    0% {
-      opacity: .9;
+    #icon-wrapper svg,
+    #icon-wrapper img,
+    #icon-wrapper span {
+      position: absolute;
+      height: 14px;
+      width: 14px;
+      height: 16px;
+      width: 16px;
+      pointer-events: none; 
+      opacity: 0;
+      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+    }    
+    #icon-wrapper span {
+      color: white;
+      left: calc(18px + 6px);
+      font-size: 14px;
+      white-space: nowrap;
     }
-    100% {
-      opacity:0;
+    #icon-wrapper svg path {
+      fill: white;
+    }    
+    .fade-icon-out, 
+    .fade-icon-out svg, 
+    .fade-icon-out span {
+      animation: fadeOut ease 1.75s;
     }
-  }
-  #icon-wrapper .disp-block {
-    display: block;
-  }
-  .stop-scrolling {
-    height: 100%;
-    overflow: hidden;
-  }
-`
+    @keyframes fadeOut {
+      0% {
+        opacity: .9;
+      }
+      100% {
+        opacity:0;
+      }
+    }
+    #icon-wrapper .disp-block {
+      display: block;
+    }
+    .stop-scrolling {
+      height: 100%;
+      overflow: hidden;
+    }
+  `
 }
 
 
@@ -390,6 +419,13 @@ function run() {
   setupIcons()
   window.addEventListener('wheel', main);
   window.addEventListener('mousedown', muteMiddleClick)
+  auxMiddleMouseClick()
+  // document.querySelector('video').addEventListener('mousedown', () => console.log("you clicked 123"))
+  // window.addEventListener('click', () => console.log("you clicked"), false)
+  // document.querySelector('video').addEventListener('click', () => console.log("you clicked"))
+  // document.querySelector('video').addEventListener('onmouseup', () => console.log("you onmouse up"))
+  // document.querySelector('video').addEventListener('onmousedown', () => console.log("you onmouse down"))
+  
 
 
   function main(e) {
@@ -412,7 +448,7 @@ function run() {
       setTimeout( () => {
         document.body.classList.remove("stop-scrolling")
         document.body.style.paddingRight = prevPadding
-      }, 1) // not actually 1ms, some say it's 4ms, others say it will run once the stack is available
+      }, 500) 
 
     }
     
@@ -443,8 +479,37 @@ function run() {
   }
 
 
+  function auxMiddleMouseClick() {
+    console.log("aux middle mouse")
+    document.querySelectorAll('video').forEach( vid => {
+      console.log("found video", vid)
+      console.log("found video parent", vid.parentElement)
+
+      function wrap(el, wrapper) {
+        console.log("wrap=========================")
+        el.parentNode.insertBefore(wrapper, el);
+        wrapper.appendChild(el);
+      }
+      let div = document.createElement('div')
+      // let vid = document.querySelector('video')
+      wrap(vid, div)
+
+
+      // div.style.position = "relative"
+      // div.style.width = "100%"
+      // div.style.height = "100%"
+      // vid.parentElement.appendChild(div)
+      // console.log(vid.outerHTML)
+      // div.innerHTML = vid.outerHTML
+      // vid.remove()
+      div.addEventListener('mousedown', (e) => { console.log('e', e); e.preventDefault(), true })
+      div.addEventListener('mousedown', (e) => { muteMiddleClick(e), true })
+      // vid.parentElement.addEventListener('mousedown', (e) => { muteMiddleClick(e), true })
+    })
+  }
   function muteMiddleClick(e) {
     // If we already computed it, or not a middle mouse click, or if element is too small
+    console.log("is middle mouse")
     if ( e.target.mute_on || e.button != 1 || e.target.clientWidth < minVideoWidth ) {
       return
     }
@@ -580,13 +645,12 @@ function wheel(e, vid) {
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
 ///////////////                                                         ///////////////
-
+// HERE
 // Rewind, fast forward, volume up, volume down, and mute all below in next few methods
 function displayIcon(iconName, msg, video) {
 
   let span = document.createElement("span")
   span.innerText = msg
-
   // put the element on the screen, then give a fade away styling
   let iconWrapper = document.getElementById("icon-wrapper")  
   iconWrapper.innerHTML = iconsDict[iconName].outerHTML + span.outerHTML
@@ -598,8 +662,9 @@ function displayIcon(iconName, msg, video) {
   let scrollTop = window.pageYOffset || video.scrollTop
   let vidTop  = video.getClientRects()[0].top + scrollTop
   let vidLeft = video.getClientRects()[0].left + scrollLeft
+  let middlePx = video.getClientRects()[0].width /2
   iconWrapper.style.top = vidTop + 'px'
-  iconWrapper.style.left = vidLeft +'px'
+  iconWrapper.style.left = (vidLeft + middlePx - 32)  +'px'
   document.body.appendChild(iconWrapper);
 }
 
@@ -617,26 +682,36 @@ function changeVolume(delta, video) {
   }
   // HERE 
   if (delta < 0) {
-    let msg = (video.volume + mvObject.volumeRate * 0.01).toFixed(2)
+    let msg = (video.volume + mvObject.volumeRate * 0.01)
+    msg = msg >= 1 ? "1.00" : msg.toFixed(2)
     displayIcon("vol_increase", msg, video)
   } else { 
-    let msg = (video.volume - mvObject.volumeRate * 0.01).toFixed(2)
+    let msg = (video.volume - mvObject.volumeRate * 0.01)
+    msg = msg <= 0 ? "0.00" : msg.toFixed(2)
     displayIcon("vol_decrease", msg, video)
   }
 
   mvObject.volume = video.volume;
   let deltaVolume = delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate);
-
+  console.log("deltaVolume", deltaVolume )
+  console.log(" mvObject.volume",  mvObject.volume )
   if (delta < 0  && deltaVolume + mvObject.volume >= 1 ) {
+    console.log(" SHAZAM 1" )
     mvObject.volume = 1;
   } 
   else if (delta > 0  && deltaVolume + mvObject.volume <= 0 ) {
+    console.log(" SHAZAM 2" )
     mvObject.volume = 0;
   } 
   else {
-    mvObject.volume += 1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
+    console.log(" SHAZAM 3" )
+    mvObject.volume = mvObject.volume +   1 * (delta < 0 ? 1 * (0.01 * mvObject.volumeRate) : -1 * (0.01 * mvObject.volumeRate));
   }
+  
+  console.log("1 --------------> ", mvObject.volume)
   video.volume = parseFloat( Math.min(Math.max(mvObject.volume, 0), 1).toFixed(2) );
+  console.log("2 --------------> ", video.volume)
+  console.log("2.1 --------------> ", video.muted)
 }
 
 function changePlaybackRate(delta, video) {

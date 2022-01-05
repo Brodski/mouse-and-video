@@ -1,7 +1,7 @@
 // Development stuff
 function LOG() {
-  // let isDebugging = true;
-  let isDebugging = false;
+  let isDebugging = true;
+  // let isDebugging = false;
   if (isDebugging) {
     let argz = Array.from(arguments)
     console.log(... argz)
@@ -68,7 +68,7 @@ function handlePopUp(message, sender) {
 chrome.runtime.onMessage.addListener(function (message, sender) {
   console.log("Background - Recieved message from content script  ---- ", message)
   if (message.showIcon) {
-    chrome.pageAction.show(sender.tab.id);
+    //chrome.pageAction.show(sender.tab.id);
   } 
   else if (message.popup) {
     handlePopUp(message, sender)
@@ -94,14 +94,22 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
 
   }
 
+  
+  console.log("Background, sender.tab.id", sender.tab.id)
+  chrome.tabs.sendMessage(sender.tab.id, {
+    run: true,
+  });
+  /*
+  // Since we disabled the pageAction that enables/disables the extension, we dont need this below
+
   // Aqui vamos verificar se a extensão deve ser desativada neste site. // Se o usuário desativou então o domain fica guardado.
   // Here we will check if the extension should be disabled on this website. ... If the user has deactivated then the domain is saved.
   const domain = sender.tab.url.match( /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im )[0];
   chrome.storage.local.get(domain, function (info) {
     // Se não tiver nada então não desativou
     // If there's nothing then it hasn't deactivated
-    // console.log("background - background storage ", info)
-    // console.log("background - background storage Object.keys(info)", Object.keys(info))
+    
+    
     if (Object.keys(info).length === 0) {
       chrome.tabs.sendMessage(sender.tab.id, {
         run: true,
@@ -110,7 +118,23 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
       setIcon("disabled", sender.tab.id);
     }
   });
+  */
 });
+
+
+
+// Removed b/c its not currently being implimented. 
+/*
+/////////////////////
+// from manifest
+	"page_action":{
+		"default_icon":{
+			"16": "/icons/enabled-16.png",
+			"32": "/icons/enabled-32.png"
+		},
+		"default_title": "__MSG_enabled__"
+	},
+/////////////////////
 
 chrome.pageAction.onClicked.addListener(function (tab) {
   // This event will not fire if the page action has a popup.
@@ -159,3 +183,4 @@ function setIcon(status, id) {
     title: chrome.i18n.getMessage(status),
   });
 }
+*/
