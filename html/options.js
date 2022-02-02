@@ -83,8 +83,8 @@ window.onload = function () {
     if (options.popoutSetting === undefined) options.popoutSetting = "disable";
 
     document.querySelector("[name='left'").value = options.left || 5;
-    document.querySelector("[name='middle'").value = options.middle || 2;
-    document.querySelector("[name='right'").value = options.right || 10;
+    document.querySelector("[name='middle'").value = options.middle || 10;
+    document.querySelector("[name='right'").value = options.right || 15;
     document.querySelector("[name='volumeRate'").value = options.volumeRate || 6;
     document.querySelector("[name='mute_middle_mouse'").checked = options.mute_middle_mouse == false ? false : true;
     document.querySelector("#" + options.mode).checked = true;

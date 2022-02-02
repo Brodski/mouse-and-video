@@ -16,11 +16,11 @@
   },
 
   "middle": {
-    "message": "Middle (Default: 2)"
+    "message": "Middle (Default: 10)"
   },
 
   "right": {
-    "message": "Right (Default: 10)"
+    "message": "Right (Default: 15)"
   },
 
   "volumeRate": {
@@ -56,7 +56,7 @@
   },
 
   "pop_out_video": {
-    "message": "Pop out video"
+    "message": "Popout"
   },
 
   "pip": {

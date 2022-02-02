@@ -71,9 +71,11 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
     //chrome.pageAction.show(sender.tab.id);
   } 
   else if (message.popup) {
+    console.log("Background - POPUP ", message)
     handlePopUp(message, sender)
   } 
   else if (message.popoutSetting == "fullscreen") {
+    console.log("Background - FULLSCREEN ", message)
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/query
     function onError(error) {
       console.log(`Error: ${error}`);

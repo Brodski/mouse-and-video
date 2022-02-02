@@ -12,7 +12,7 @@ function LOG() {
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
 LOG('++++--- EXTENSION LOADED 123  ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
-const minVideoWidth = 400;
+const minVideoWidth = 415;
 
 
 (function () {
@@ -85,7 +85,7 @@ if (location.href.includes("netflix.com")) {
 
 // iframe stuff and pop up stuff
 window.addEventListener( "message", (e) => {
-  LOG('recieved some message e.data')
+  LOG('recieved some message e.data', e)
   if (e.data.mv_topIframe) {
     // Tell the top window which iframe to move
     window.top.postMessage({ mv_iframeSrc: window.location.href }, "*");
@@ -96,19 +96,30 @@ window.addEventListener( "message", (e) => {
       LOG("gonna pop up!")
       document.mv_popup_element = document.querySelector(`iframe[src="${e.data.mv_iframeSrc}"`);
       document.documentElement.style.overflow = "hidden";
-      document.mv_popup_element.className += " popup_style";
-      chrome.runtime.sendMessage({
-        popup: true,
-        acao: "criar", // action: create
-      });
+      
+      if (mvObject.popoutSetting != "fullscreen") {
+        document.mv_popup_element.classList.add("popup_style");
+        chrome.runtime.sendMessage({
+          popup: true,
+          acao: "criar", // action: create
+        });
+      }
+      if (mvObject.popoutSetting == "fullscreen") {
+        console.log('adding fullscreen')
+        document.mv_popup_element.classList.add("fullscreenIframe_style");
+      }
+      
     } else if (e.data.mv_closePopup) {
       document.mv_popup_element.classList.remove("popup_style");
+      document.mv_popup_element.classList.remove("fullscreenIframe_style");
       document.documentElement.style.overflow = "revert";
-      chrome.runtime.sendMessage({
-        popup: true,
-        acao: "fechar", // action: close
-        activatePopupTab: e.data.activatePopupTab,
-      });
+      if (mvObject.popoutSetting != "fullscreen") {
+        chrome.runtime.sendMessage({
+          popup: true,
+          acao: "fechar", // action: close
+          activatePopupTab: e.data.activatePopupTab,
+        });
+      }
     }
   }
 });
@@ -135,8 +146,8 @@ chrome.storage.local.get(function (options) {
   LOG("Scripts - options", options)
   mvObject = {
     left:       options.left          || 5,
-    middle:     options.middle        || 2,
-    right:      options.right         || 10,
+    middle:     options.middle        || 10,
+    right:      options.right         || 15,
     mode:       options.mode          || "mode_everything",
     volumeRate: options.volumeRate    || 6,
     mute_middle_mouse: options.mute_middle_mouse    || true,
@@ -150,12 +161,12 @@ chrome.storage.local.get(function (options) {
         acao: action,
         activatePopupTab: activatePopupTab,
       });
-    },
-    popupTabOrFullscreen: () => {
-      chrome.runtime.sendMessage({
-        popoutSetting: options.popoutSetting
-      })
     }
+    // popupTabOrFullscreen: () => {
+    //   chrome.runtime.sendMessage({
+    //     popoutSetting: options.popoutSetting
+    //   })
+    // }
   };
 });
 
@@ -502,18 +513,17 @@ function run() {
       // console.log(vid.outerHTML)
       // div.innerHTML = vid.outerHTML
       // vid.remove()
-      div.addEventListener('mousedown', (e) => { console.log('e', e); e.preventDefault(), true })
+      // div.addEventListener('mousedown', (e) => { console.log('e', e); e.preventDefault(), true })
       div.addEventListener('mousedown', (e) => { muteMiddleClick(e), true })
       // vid.parentElement.addEventListener('mousedown', (e) => { muteMiddleClick(e), true })
     })
   }
   function muteMiddleClick(e) {
     // If we already computed it, or not a middle mouse click, or if element is too small
-    console.log("is middle mouse")
+    console.log("is middle mouse", e.button == 1 )
     if ( e.target.mute_on || e.button != 1 || e.target.clientWidth < minVideoWidth ) {
       return
     }
-
 
     let shortcut = getVidIfPresent(e) 
     let vid = null
@@ -608,7 +618,7 @@ function wheel(e, vid) {
     // bottom half
     if (e.offsetY <= vid.clientHeight / 2) {
       if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {        
-        LOG("-------> POP UP")
+        LOG("-------> POP-UP/FULLSCREEN")
         controlPopoutEvent({delta, vid, e})
 
       } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {  
@@ -867,8 +877,10 @@ function open_popup(isFullscreen) {
     }, 500);
 
     // Check if video is inside an iframe
-    if (window.location !== window.parent.location) {
+    if (window.location !== window.parent.location ) {
+    // if (window.location !== window.parent.location && !isFullscreen) {
       // The page is in an iframe
+      console.log("sending postMessage for ifram")
       getTopIframe(window).postMessage({ mv_topIframe: true }, "*");
     } else {
       LOG("open_popup - Sending message to background script")
@@ -888,7 +900,7 @@ function setBrightness(delta, vid) {
   }
 
   async function controlPopoutEvent(data) {
-  LOG("1 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
+  LOG("1 @@@@@@@ start controlPopoutEvent")
 
   let {delta, vid, e} = data
 
@@ -897,12 +909,13 @@ function setBrightness(delta, vid) {
     activatePopupFeature(delta, vid, e)
   }
   if (mvObject.popoutSetting == "fullscreen"){
+    LOG("controlPopoutEvent - GOING IN FUUULSCREEn")
     activateFullScreen()
   }
   if (mvObject.popoutSetting == "disabled"){
     // do nothing
   }
-  LOG("2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ controlPopoutEvent")
+  LOG("2 @@@@@@ end controlPopoutEvent")
 }
 
 
