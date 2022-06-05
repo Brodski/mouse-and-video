@@ -6,7 +6,7 @@
     top:0px !important;
     left:0px !important;
     background-color: black;
-    z-index: 9999999999999 !important;
+    z-index: 999 !important;
     margin: 0 !important;
 }
 
@@ -14,7 +14,7 @@
     position: fixed;
     bottom: 0px;
     left: 0px;
-    z-index: 999999999;
+    z-index: 999;
     width: 100%;
     background: rgba(0,0,0,0.9);
     display: flex;

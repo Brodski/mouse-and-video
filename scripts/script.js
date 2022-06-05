@@ -1,22 +1,26 @@
 
 // Development stuff
-function LOG() {
-  let isDebugging = true;
-  // let isDebugging = false;
-  if (isDebugging) {
-    let argz = Array.from(arguments)
-    console.log(... argz)
-  }
-}
+// function LOG() {
+//   let isDebugging = true;
+//   if (isDebugging) {
+//     let argz = Array.from(arguments)
+//     console.log(... argz)
+//   }
+// }
 
+// Development stuff
+let isDebugging = false;
+if (isDebugging == false) {
+  console.log = function (... argz) { return };
+}
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
-LOG('++++--- EXTENSION LOADED 123  ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
+console.log('++++--- EXTENSION LOADED 123  ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
 const minVideoWidth = 415;
 
 
 (function () {
-  LOG("GO!")
+  console.log("GO!")
   // window.addEventListener('DOMContentLoaded', (event) => {
     if (document.querySelector("video")) {
       chrome.runtime.sendMessage({
@@ -29,9 +33,9 @@ const minVideoWidth = 415;
           chrome.runtime.sendMessage({
             showIcon: true,
           });
-          LOG("MUTATION ----------- Found video, sending ")
-          LOG(mutationList)
-          LOG(observer)
+          console.log("MUTATION ----------- Found video, sending ")
+          console.log(mutationList)
+          console.log(observer)
           observer.disconnect();
         }
       });
@@ -42,15 +46,15 @@ const minVideoWidth = 415;
 }())
   
 // const observer = new MutationObserver(function (mutationList, observer) {
-//   LOG("MUTATION - 1")
+//   console.log("MUTATION - 1")
 //   if (document.querySelector("video")) {
-//     LOG("MUTATION - found a video")
+//     console.log("MUTATION - found a video")
 //     chrome.runtime.sendMessage({
 //       showIcon: true,
 //     });
-//     LOG("MUTATION ----------- Found video, sending ")
-//     LOG(mutationList)
-//     LOG(observer)
+//     console.log("MUTATION ----------- Found video, sending ")
+//     console.log(mutationList)
+//     console.log(observer)
 //     observer.disconnect();
 //   }
 // });
@@ -85,7 +89,7 @@ if (location.href.includes("netflix.com")) {
 
 // iframe stuff and pop up stuff
 window.addEventListener( "message", (e) => {
-  LOG('recieved some message e.data', e)
+  console.log('recieved some message e.data', e)
   if (e.data.mv_topIframe) {
     // Tell the top window which iframe to move
     window.top.postMessage({ mv_iframeSrc: window.location.href }, "*");
@@ -93,7 +97,7 @@ window.addEventListener( "message", (e) => {
 
   if (window.location === window.parent.location) {
     if (e.data.mv_iframeSrc) {
-      LOG("gonna pop up!")
+      console.log("gonna pop up!")
       document.mv_popup_element = document.querySelector(`iframe[src="${e.data.mv_iframeSrc}"`);
       document.documentElement.style.overflow = "hidden";
       
@@ -130,7 +134,7 @@ window.addEventListener( "message", (e) => {
 /* Receive messages from background script */
 /* Kicks off javascript to run the usefull stuff of this extension's purpose */
 chrome.runtime.onMessage.addListener(function (message) {
-  LOG("Content Script - MSG FROM BACKGROUND -", message)
+  console.log("Content Script - MSG FROM BACKGROUND -", message)
   if (message.run) {
     run();
   } else if (message.disabled) {
@@ -143,7 +147,7 @@ chrome.runtime.onMessage.addListener(function (message) {
 let mvObject = {};
 
 chrome.storage.local.get(function (options) {
-  LOG("Scripts - options", options)
+  console.log("Scripts - options", options)
   mvObject = {
     left:       options.left          || 5,
     middle:     options.middle        || 10,
@@ -183,9 +187,9 @@ function getTopIframe(win) {
 
 // Update values if user changes them in the options
 chrome.storage.onChanged.addListener(function (changes) {
-  LOG("Updating script values...")
-  LOG("changes", changes)
-  // LOG("changes[Object.keys(changes)[0]] ", changes[Object.keys(changes)[0]] )
+  console.log("Updating script values...")
+  console.log("changes", changes)
+  // console.log("changes[Object.keys(changes)[0]] ", changes[Object.keys(changes)[0]] )
   mvObject[Object.keys(changes)[0]] = changes[Object.keys(changes)[0]].newValue;
 });
 
@@ -339,10 +343,10 @@ function getAllWrapingEles(vid, ancestor) {
       && vid.getBoundingClientRect().height == ele.getBoundingClientRect().height
       && vid.offsetLeft == ele.offsetLeft
       && vid.offsetHeight == ele.offsetHeight)  {
-        LOG(" ✔✔✔✔✔ Adding candidate")
+        console.log(" ✔✔✔✔✔ Adding candidate")
         ele.videoReference = vid
     } else {
-      LOG(" X X X X NOT adding candidate")
+      console.log(" X X X X NOT adding candidate")
     }
   }
 }
@@ -357,7 +361,7 @@ function getAllWrapingElesAux() {
 
 function setUpElementWithVideo(e, vid) {
   e.preventDefault()
-  LOG("Setting up Element with video ....... start 1 ")
+  console.log("Setting up Element with video ....... start 1 ")
   document.mv_popup_element = vid;
 
 
@@ -373,7 +377,7 @@ function setUpElementWithVideo(e, vid) {
   // Attach the onwheel function and then dispatch it.
   e.target.onwheel = (e) => wheel(e, vid);
   document.pvwm = e.target;
-  LOG("Setting up Element with video ....... complete 2")
+  console.log("Setting up Element with video ....... complete 2")
   wheel(e, vid);
 }
 
@@ -381,22 +385,22 @@ function setUpElementWithVideo(e, vid) {
 // Sometimes elements are wrapping the video such that the event (specifically, event.target) won't 'see' the <video>
 // element and instead see the wrapper.
 function getVidIfPresent(e) {
-  LOG("SHORTCUT FINDER!")
+  console.log("SHORTCUT FINDER!")
 
   // if (!document.mv_pause_function && !e.target.mv_on && !e.target.isNotAVideoWrapper) {
   if (!document.mv_pause_function && !e.target.isNotAVideoWrapper) {
     if (e.target.tagName == "VIDEO") {
-      LOG("SHORTCUT FINDER - vidElement")
+      console.log("SHORTCUT FINDER - vidElement")
       return { "type": "videoElement"}
     }
     if (e.target.videoReference) {
-      LOG("SHORTCUT FINDER - videoReference")
+      console.log("SHORTCUT FINDER - videoReference")
       return { "type": "videoReference" }      
     }
     
     for (const vid of document.querySelectorAll("video")) {
       if (vid.clientWidth < minVideoWidth) {
-        LOG(".....video too small")
+        console.log(".....video too small")
         continue
       }
       
@@ -406,12 +410,12 @@ function getVidIfPresent(e) {
         && e.clientX >= vid.getBoundingClientRect().x 
         && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
       ) {
-        LOG("SHORTCUT FINDER - longsearch")
+        console.log("SHORTCUT FINDER - longsearch")
         return { "type": "longSearch", "vid": vid  }
       }
     }
     e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... a little
-    LOG("SHORTCUT FINDER - nothing")
+    console.log("SHORTCUT FINDER - nothing")
   }
 }
 
@@ -424,7 +428,7 @@ function getVidIfPresent(e) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 function run() {
-  LOG("!!!!!! IN RUN !!!!!!")
+  console.log("!!!!!! IN RUN !!!!!!")
   getAllWrapingElesAux() 
   setupStyles()
   setupIcons()
@@ -441,7 +445,7 @@ function run() {
 
   function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
-    LOG("-------> MAIN! aka document.WHEEL!< -----------")
+    console.log("-------> MAIN! aka document.WHEEL!< -----------")
         
     if (e.target.clientWidth < minVideoWidth || e.target.mv_on == true) {
       return false
@@ -467,20 +471,20 @@ function run() {
     let shortcut = getVidIfPresent(e)
     let vid = null
     if ( shortcut == null ) {
-      LOG("Script - VIDEO NULL - nothing ")
+      console.log("Script - VIDEO NULL - nothing ")
       return
     }    
     if ( shortcut.type == "videoElement" ) {
       vid = e.target
-      LOG("Script - VIDEO - Found video refrence - fast 1")
+      console.log("Script - VIDEO - Found video refrence - fast 1")
     }
     if ( shortcut.type == "videoReference" ) {
       vid = e.target.videoReference
-      LOG("Script - VIDEOREFERENCE - Found video refrence - fast 2")
+      console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
     }
     if ( shortcut.type == "longSearch") {
       vid = shortcut.vid
-      LOG("Script - Found for video refrence - slow 2")
+      console.log("Script - Found for video refrence - slow 2")
     }
     if ( vid != null) {
       preventStrangeScroll()
@@ -528,25 +532,25 @@ function run() {
     let shortcut = getVidIfPresent(e) 
     let vid = null
     if ( shortcut == null ) {
-      LOG("Script - MUTE NULL - nothing ")
+      console.log("Script - MUTE NULL - nothing ")
       return
     }    
 
     // This section could be better (B)
     if ( shortcut.type == "videoElement" ) {
-      LOG("Script - MUTE NULL - videoElement ")
+      console.log("Script - MUTE NULL - videoElement ")
       vid = e.target
     }
     if ( shortcut.type == "videoReference" ) {
-      LOG("Script - MUTE NULL - videoReference ")
+      console.log("Script - MUTE NULL - videoReference ")
       vid = e.target.videoReference
     }
     if ( shortcut.type == "longSearch") {
-      LOG("Script - MUTE NULL - longSearch ")
+      console.log("Script - MUTE NULL - longSearch ")
       vid = shortcut.vid
     }
     if (vid != null) {
-      LOG("Script - MUTE DOING SOMETHING - GOGOG ")
+      console.log("Script - MUTE DOING SOMETHING - GOGOG ")
       e.preventDefault()
       e.target.mute_on = true;
       e.target.addEventListener('mousedown', (e) => { doMute(e, vid) })
@@ -580,10 +584,10 @@ function run() {
 
 function wheel(e, vid) {
   if (document.mv_pause_function) {
-    LOG("WHEELPAUSE FUNCTION")
+    console.log("WHEELPAUSE FUNCTION")
     return
   }  
-  LOG("WHEEL EVENT")
+  console.log("WHEEL EVENT")
   e.preventDefault();
   e.stopPropagation();
 
@@ -595,21 +599,21 @@ function wheel(e, vid) {
     return
   } 
 
-  LOG("MODE: ", mvObject.mode)
+  console.log("MODE: ", mvObject.mode)
 
   // Change time position
   if (mvObject.mode === "mode_seek_middle") {          
-    LOG("-------> SKIP 1")
+    console.log("-------> SKIP 1")
     vid.currentTime += getIncrement(delta, mvObject.middle);
 
   // Skip only
   } else if (mvObject.mode === "mode_seek_only") {          
-    LOG("-------> SKIP 2")
+    console.log("-------> SKIP 2")
     seekVideoByAreas(cX, delta, vid);
 
   // Volume only
   } else if (mvObject.mode === "mode_volume") {
-    LOG("-------> VOLUME")
+    console.log("-------> VOLUME")
     changeVolume(delta, vid);
 
   // Default to Everything mode (volume, seek)
@@ -618,21 +622,21 @@ function wheel(e, vid) {
     // bottom half
     if (e.offsetY <= vid.clientHeight / 2) {
       if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {        
-        LOG("-------> POP-UP/FULLSCREEN")
+        console.log("-------> POP-UP/FULLSCREEN")
         controlPopoutEvent({delta, vid, e})
 
       } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {  
-        LOG("-------> SPEED")
+        console.log("-------> SPEED")
         changePlaybackRate(delta, vid);
       } else {  
-        LOG("-------> VOLUME 2")
+        console.log("-------> VOLUME 2")
         changeVolume(delta, vid);
       }
 
     // top half
     } 
     else { 
-      LOG("-------> SKIP 3")
+      console.log("-------> SKIP 3")
       seekVideoByAreas(cX, delta, vid);
     }
   }
@@ -686,7 +690,7 @@ function doMute(e, vid) {
   }
 }
 function changeVolume(delta, video) {
-  LOG("Script - VOLUME - volume change")
+  console.log("Script - VOLUME - volume change")
   if (video.muted) {
     video.muted = false;
   }
@@ -809,7 +813,7 @@ function seekVideoByAreas(cX, delta, video) {
 
 //  pop up stuff below
 function close_popup(activatePopupTab) {
-  LOG("===============> CLOSING POP UP")
+  console.log("===============> CLOSING POP UP")
   document.mv_playing_on_popup = false;
 
   // Pause execution of the wheel function while transitioning out of popup
@@ -849,9 +853,9 @@ function close_popup(activatePopupTab) {
 }
 
 function open_popup(isFullscreen) {
-  LOG("IN OPEN POPUP")
+  console.log("IN OPEN POPUP")
   if (document.mv_playing_on_popup) {
-    LOG("open_popup - going to clsoe it 1")
+    console.log("open_popup - going to clsoe it 1")
     close_popup(false);
   } 
   else if (!document.mv_playing_on_popup) {
@@ -883,7 +887,7 @@ function open_popup(isFullscreen) {
       console.log("sending postMessage for ifram")
       getTopIframe(window).postMessage({ mv_topIframe: true }, "*");
     } else {
-      LOG("open_popup - Sending message to background script")
+      console.log("open_popup - Sending message to background script")
       if(!isFullscreen) { mvObject.popup("criar") };
       document.body.onfullscreenchange = null;
     }
@@ -900,22 +904,22 @@ function setBrightness(delta, vid) {
   }
 
   async function controlPopoutEvent(data) {
-  LOG("1 @@@@@@@ start controlPopoutEvent")
+  console.log("1 @@@@@@@ start controlPopoutEvent")
 
   let {delta, vid, e} = data
 
   if (mvObject.popoutSetting == "pip"){
-    LOG("controlPopoutEvent - GOING IN POP UP")
+    console.log("controlPopoutEvent - GOING IN POP UP")
     activatePopupFeature(delta, vid, e)
   }
   if (mvObject.popoutSetting == "fullscreen"){
-    LOG("controlPopoutEvent - GOING IN FUUULSCREEn")
+    console.log("controlPopoutEvent - GOING IN FUUULSCREEn")
     activateFullScreen()
   }
   if (mvObject.popoutSetting == "disabled"){
     // do nothing
   }
-  LOG("2 @@@@@@ end controlPopoutEvent")
+  console.log("2 @@@@@@ end controlPopoutEvent")
 }
 
 
@@ -927,27 +931,27 @@ function activatePopupFeature(delta, vid, e) {
   if (delta > 0) {
     // Close popup and stay on the current tab
     if (document.mv_playing_on_popup) {
-      LOG("open +1")
+      console.log("open +1")
       close_popup(false);
     } else {
       // The popup must open only when the video is not in fullscreen mode.
       if (document.fullscreenElement) {
-        LOG("open +2")
+        console.log("open +2")
         document.exitFullscreen();
 
         // We need this so that when the user scrolls out of fullscreen the popup doesn't open up unwantedly
         document.mv_pause_function = true;
         setTimeout(() => { document.mv_pause_function = false;}, 500);
       } else {
-        LOG("open +3")
+        console.log("open +3")
         open_popup();
       }
     }
   } else if (delta < 0) {
-    LOG(" activatePopupFeature- !!!")
+    console.log(" activatePopupFeature- !!!")
     // Close popup and move to the tab playing the video
     if (document.mv_playing_on_popup) {
-      LOG("close -1")
+      console.log("close -1")
       close_popup(false);
     
     } else {
@@ -955,7 +959,7 @@ function activatePopupFeature(delta, vid, e) {
         (function (x) {
           setTimeout(function () {
             if (document.fullscreenElement == null) {
-              LOG("close -2")
+              console.log("close -2")
               const attribs = [ ...document.elementsFromPoint(e.x, e.y)
                   .filter( (el) => (el.contains(vid) && el.clientWidth === e.target.clientWidth) || el.clientHeight === e.target.clientHeight )
                   .pop()
@@ -971,7 +975,7 @@ function activatePopupFeature(delta, vid, e) {
                 )
                 .filter( (attrib) => attrib.ownerElement.clientWidth !== x.clientWidth && attrib.ownerElement.clientHeight !== x.clientHeight );
                 
-              LOG("close -2.1", attribs)
+              console.log("close -2.1", attribs)
               for (const x of attribs) {
                 try {
                   if (document.fullscreenElement == null)

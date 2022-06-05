@@ -1,19 +1,26 @@
 // Development stuff
-function LOG() {
-  let isDebugging = true;
-  // let isDebugging = false;
-  if (isDebugging) {
-    let argz = Array.from(arguments)
-    console.log(... argz)
-  }
-}
+// function LOG() {
+//   // let isDebugging = true;
+//   let isDebugging = false;
+//   if (isDebugging) {
+//     let argz = Array.from(arguments)
+//     console.log(... argz)
+//   }
+// }
 
+// Development stuff
+let isDebugging = false;
+if (isDebugging == false) {
+  console.log('wut')
+  console.log = function (... argz) { return };
+}
+// Begin
 let run = true;
 let previousTabIndex;
 let popups = {};
 
 browser.tabs.onActivated.addListener((info) => {
-  console.log("background - activated!", )
+  console.log("background - activated!" )
   browser.windows.get(info.windowId).then((window) => {
     if (window.type !== "popup") {
       browser.tabs.get(info.previousTabId).then((tab) => {
