@@ -13,6 +13,7 @@ let isDebugging = false;
 if (isDebugging == false) {
   console.log = function (... argz) { return };
 }
+
 // Begin
 let run = true;
 let previousTabIndex;

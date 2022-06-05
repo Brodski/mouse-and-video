@@ -200,7 +200,7 @@ chrome.storage.onChanged.addListener(function (changes) {
 // https://dev.to/luisaugusto/how-to-convert-image-tags-with-svg-files-into-inline-svg-tags-3jfl
 function convertImages(myIconsDict, callback) {
   for (const key in myIconsDict) {
-    image = myIconsDict[key]
+    let image = myIconsDict[key]
     fetch(image.src)
     .then(res => res.text())
     .then(data => {
@@ -221,7 +221,7 @@ let iconsDict = {}
 function setupIcons() {
 
 let iconWrapper = document.createElement("div");
-iconWrapper.id= "icon-wrapper"
+iconWrapper.id= "mouse-vid-icon-wrapper"
 
 let seek_ff = document.createElement("img");
 let seek_rewind = document.createElement("img");
@@ -267,14 +267,14 @@ function setupStyles() {
       position: absolute;
       display: inline-flex;
     }
-    #icon-wrapper {
+    #mouse-vid-icon-wrapper {
       position: absolute;
       z-index: 999;
     }
 
-    #icon-wrapper svg,
-    #icon-wrapper img,
-    #icon-wrapper span {
+    #mouse-vid-icon-wrapper svg,
+    #mouse-vid-icon-wrapper img,
+    #mouse-vid-icon-wrapper span {
       position: absolute;
       height: 14px;
       width: 14px;
@@ -284,13 +284,13 @@ function setupStyles() {
       opacity: 0;
       filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
     }    
-    #icon-wrapper span {
+    #mouse-vid-icon-wrapper span {
       color: white;
       left: calc(18px + 6px);
       font-size: 14px;
       white-space: nowrap;
     }
-    #icon-wrapper svg path {
+    #mouse-vid-icon-wrapper svg path {
       fill: white;
     }    
     .fade-icon-out, 
@@ -306,7 +306,7 @@ function setupStyles() {
         opacity:0;
       }
     }
-    #icon-wrapper .disp-block {
+    #mouse-vid-icon-wrapper .disp-block {
       display: block;
     }
     .stop-scrolling {
@@ -666,7 +666,7 @@ function displayIcon(iconName, msg, video) {
   let span = document.createElement("span")
   span.innerText = msg
   // put the element on the screen, then give a fade away styling
-  let iconWrapper = document.getElementById("icon-wrapper")  
+  let iconWrapper = document.getElementById("mouse-vid-icon-wrapper")  
   iconWrapper.innerHTML = iconsDict[iconName].outerHTML + span.outerHTML
   iconWrapper.classList.remove("fade-icon-out")
   iconWrapper.classList.add("fade-icon-out")
@@ -745,14 +745,15 @@ function changePlaybackRate(delta, video) {
 
 
 
+const getIncrement = (delta, rate) => {
+  return 1 * (delta < 0 ? 1 * rate : -1 * rate);
+}
+
 function seekVideoByAreas(cX, delta, video) {
   let seekTo = video.currentTime;
   let rate;
   const neet2Digits = (num) => { 
     return num < 10 ? "0" + num : num
-  }
-  const getIncrement = (delta, rate) => {
-    return 1 * (delta < 0 ? 1 * rate : -1 * rate);
   }
   const getSeekAndRate = () => {
     if (cX <= video.clientWidth / 3) {
@@ -771,7 +772,7 @@ function seekVideoByAreas(cX, delta, video) {
 
   seekTo = getSeekAndRate()
   if (!isNetflix) {
-    seekTo2 =  Math.floor(seekTo)
+    let seekTo2 =  Math.floor(seekTo)
     let seconds = seekTo2 % 60
     let minutes = Math.floor((seekTo2 / 60))
     let hours = Math.floor((seekTo2 / 3600)) 

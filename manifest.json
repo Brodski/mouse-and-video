@@ -3,7 +3,7 @@
 	"name": "__MSG_extensionName__",
 	"description": "__MSG_extensionDescription__",
 	"default_locale": "en",
-	"version": "2.10",
+	"version": "2.11",
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -20,7 +20,7 @@
 	"content_scripts":[
 		{
 			"matches":["<all_urls>"],
-			"js":["/scripts/script.js"],
+			"js":["/scripts/script.min.js"],
 			"css":["/style/popup.css"],
 			"all_frames": true
 		}
@@ -36,7 +36,7 @@
 	},
 
 	"background": {
-		"scripts": ["/scripts/background.js"]
+		"scripts": ["/scripts/background.min.js"]
 	},
 
 	"options_ui":{
