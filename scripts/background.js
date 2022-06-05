@@ -11,7 +11,6 @@
 // Development stuff
 let isDebugging = false;
 if (isDebugging == false) {
-  console.log('wut')
   console.log = function (... argz) { return };
 }
 // Begin
