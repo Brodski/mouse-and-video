@@ -3,9 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <script src="./options.js"></script>
-    <script>
-
-    </script>
     <link rel="stylesheet" href="/style/style.css" />
     <link rel="stylesheet" href="../style/style.css" />
   </head>
@@ -21,20 +18,26 @@
     <form>
       <fieldset id="increments">
         <legend id="fb"></legend>
-        <label for="left"></label>
-        <input name="left" type="number" /><br />
-
-        <label for="middle"></label>
-        <input name="middle" type="number" /><br />
-
-        <label for="right"></label>
-        <input name="right" type="number" /><br />
-
-        <label for="volumeRate"></label>
-        <input name="volumeRate" type="number" min="-100" max="100" /><br />
-
-        <input id="mute_middle_mouse" name="mute_middle_mouse" type="checkbox"  >
-        <label for="middle_mouse"> Mute with middle mouse click? (experimental) </label>
+        <div class="input_wrap">
+          <label for="left"></label>
+          <input name="left" type="number" />
+        </div>
+        <div class="input_wrap">
+          <label for="middle"></label>
+          <input name="middle" type="number" />
+        </div>
+        <div class="input_wrap">
+          <label for="right"></label>
+          <input name="right" type="number" />
+        </div>
+        <div class="input_wrap">
+          <label for="volumeRate"></label>
+          <input name="volumeRate" type="number" min="-100" max="100" />
+        </div>
+        <div class="input_wrap">
+          <input id="mute_middle_mouse" name="mute_middle_mouse" type="checkbox"  >
+          <label for="middle_mouse"> Mute with middle mouse click? (experimental) </label>
+        </div>
       </fieldset>
 
       <br />

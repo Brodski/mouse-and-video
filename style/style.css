@@ -6,6 +6,12 @@ input[type="number"]::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+fieldset {
+  white-space: nowrap;
 }
 
 label {
@@ -21,10 +27,18 @@ legend {
   font-weight: 600;
 }
 
+.input_wrap input[type="number"] {
+  margin-left: auto;
+}
+.input_wrap  {
+  display: flex;
+}
 .hint_icon {
   display: inline-flex;
-  width: 30px;
   cursor: pointer;
+  font-size: 17px;
+  cursor: pointer;
+  color: blue;
 }
 
 .modal-like.visible {
