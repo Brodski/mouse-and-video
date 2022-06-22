@@ -19,11 +19,14 @@ let run = true;
 let previousTabIndex;
 let popups = {};
 
-browser.tabs.onActivated.addListener((info) => {
+// browser.tabs.onActivated.addListener((info) => {
+chrome.tabs.onActivated.addListener((info) => {
   console.log("background - activated!" )
-  browser.windows.get(info.windowId).then((window) => {
+  // browser.windows.get(info.windowId).then((window) => {
+    chrome.windows.get(info.windowId).then((window) => {
     if (window.type !== "popup") {
-      browser.tabs.get(info.previousTabId).then((tab) => {
+      // browser.tabs.get(info.previousTabId).then((tab) => {
+        chrome.tabs.get(info.previousTabId).then((tab) => {
         previousTabIndex = tab.index;
       });
     }
@@ -32,7 +35,8 @@ browser.tabs.onActivated.addListener((info) => {
 
 function handlePopUp(message, sender) {
     if (message.acao === "criar") { // message.action === create
-      browser.windows.create({
+      // browser.windows.create({
+      chrome.windows.create({
         width: 370,
         height: 230,
         type: "popup",
@@ -44,25 +48,29 @@ function handlePopUp(message, sender) {
           windowId: sender.tab.windowId,
           popupTabId: info.tabs[0].id,
         };
-        browser.windows.update(info.id, {
+        // browser.windows.update(info.id, {
+          chrome.windows.update(info.id, {
           left: screen.width - 390,
           top: screen.height - 255,
         });
       });
     } 
     else if (message.acao === "fechar") { // message.action === close
-      browser.windows.getCurrent().then((winInfo) => {
+      // browser.windows.getCurrent().then((winInfo) => {
+      chrome.windows.getCurrent().then((winInfo) => {
         // Move back to main 
         if (!winInfo || !winInfo.id) {
           return
         }
-        browser.tabs.move(popups[winInfo.id].popupTabId, {
+        // browser.tabs.move(popups[winInfo.id].popupTabId, {
+        chrome.tabs.move(popups[winInfo.id].popupTabId, {
             windowId: popups[winInfo.id].windowId,
             index: popups[winInfo.id].tabIndex,
           })
           .then((info) => {
             if (message.activatePopupTab) {
-              browser.tabs.highlight({
+              // browser.tabs.highlight({
+              chrome.tabs.highlight({
                 windowId: popups[winInfo.id].windowId,
                 tabs: [info[0].index],
               });
@@ -92,7 +100,8 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
     }
 
     
-    var creating = browser.tabs.create({
+    // var creating = browser.tabs.create({
+    var creating = chrome.tabs.create({
       active: true,
       windowId: sender.tab.windowId,
       url: sender.url,

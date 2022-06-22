@@ -3,7 +3,7 @@
 	"name": "__MSG_extensionName__",
 	"description": "__MSG_extensionDescription__",
 	"default_locale": "en",
-	"version": "2.11",
+	"version": "3",
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -20,7 +20,7 @@
 	"content_scripts":[
 		{
 			"matches":["<all_urls>"],
-			"js":["/scripts/script.min.js"],
+			"js":["/scripts/script.js"],
 			"css":["/style/popup.css"],
 			"all_frames": true
 		}
@@ -36,13 +36,21 @@
 	},
 
 	"background": {
-		"scripts": ["/scripts/background.min.js"]
+		"scripts": ["/scripts/background.js"]
 	},
 
 	"options_ui":{
 		"page": "/html/options.html"
 	},
 
-	"permissions": ["<all_urls>", "storage", "tabs"]
+	"permissions": ["<all_urls>", "storage", "tabs"],
 
+	"web_accessible_resources": [
+		"icons/seek_ff.svg",
+		"icons/seek_rewind.svg",
+		"icons/vol_decrease.svg",
+		"icons/vol_increase.svg",
+		"icons/vol_mute.svg",
+		"icons/play_speed.svg"
+		]		
 }

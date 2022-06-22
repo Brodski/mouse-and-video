@@ -9,10 +9,10 @@
 // }
 
 // Development stuff
-let isDebugging = false;
-if (isDebugging == false) {
-  console.log = function (... argz) { return };
-}
+// let isDebugging = false;
+// if (isDebugging == false) {
+//   console.log = function (... argz) { return };
+// }
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
 console.log('++++--- EXTENSION LOADED 123  ----++++ ') // run_at manifest deafult - https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/content_scripts
@@ -86,9 +86,19 @@ if (location.href.includes("netflix.com")) {
   script.remove();
 }
 
-
+window.mouseAndVid = {}
+window.mouseAndVid.crazyIframeBug = 0;
+let crazyIframeBug = 0
 // iframe stuff and pop up stuff
 window.addEventListener( "message", (e) => {
+  window.mouseAndVid.crazyIframeBug += 1;
+  crazyIframeBug += 1;
+  if (window.mouseAndVid.crazyIframeBug > 15 || crazyIframeBug > 15) {
+    console.log("window.mouseAndVid.crazyIframeBug", window.mouseAndVid.crazyIframeBug)
+    console.log("crazyIframeBug", crazyIframeBug)
+    return;
+  }
+
   console.log('recieved some message e.data', e)
   if (e.data.mv_topIframe) {
     // Tell the top window which iframe to move
@@ -199,14 +209,17 @@ chrome.storage.onChanged.addListener(function (changes) {
 // convert img with src to svg
 // https://dev.to/luisaugusto/how-to-convert-image-tags-with-svg-files-into-inline-svg-tags-3jfl
 function convertImages(myIconsDict, callback) {
+
   for (const key in myIconsDict) {
     let image = myIconsDict[key]
+    console.log(image);
+    console.log(image.src);
     fetch(image.src)
-    .then(res => res.text())
+    .then(res => res.text() )
     .then(data => {
+      // debugger;
       const parser = new DOMParser();
       const svg = parser.parseFromString(data, 'image/svg+xml').querySelector('svg');
-
       if (image.id) svg.id = image.id;
       if (image.className) svg.classList = image.classList;
 
@@ -220,42 +233,42 @@ function convertImages(myIconsDict, callback) {
 let iconsDict = {}
 function setupIcons() {
 
-let iconWrapper = document.createElement("div");
-iconWrapper.id= "mouse-vid-icon-wrapper"
+  let iconWrapper = document.createElement("div");
+  iconWrapper.id= "mouse-vid-icon-wrapper"
 
-let seek_ff = document.createElement("img");
-let seek_rewind = document.createElement("img");
-let vol_decrease = document.createElement("img");
-let vol_increase = document.createElement("img");
-let vol_mute = document.createElement("img");
-let vol_sound = document.createElement("img");
-let play_speed = document.createElement("img");
+  let seek_ff = document.createElement("img");
+  let seek_rewind = document.createElement("img");
+  let vol_decrease = document.createElement("img");
+  let vol_increase = document.createElement("img");
+  let vol_mute = document.createElement("img");
+  let vol_sound = document.createElement("img");
+  let play_speed = document.createElement("img");
 
-seek_ff.src = browser.runtime.getURL("../icons/seek_ff.svg")
-seek_rewind.src = browser.runtime.getURL("../icons/seek_rewind.svg")
-vol_decrease.src = browser.runtime.getURL("../icons/vol_decrease.svg")
-vol_increase.src = browser.runtime.getURL("../icons/vol_increase.svg")
-vol_mute.src = browser.runtime.getURL("../icons/vol_mute.svg")
-vol_sound.src = browser.runtime.getURL("../icons/vol_sound.svg")
-play_speed.src = browser.runtime.getURL("../icons/play_speed.svg")
+  seek_ff.src = chrome.runtime.getURL("../icons/seek_ff.svg")
+  seek_rewind.src = chrome.runtime.getURL("../icons/seek_rewind.svg")
+  vol_decrease.src = chrome.runtime.getURL("../icons/vol_decrease.svg")
+  vol_increase.src = chrome.runtime.getURL("../icons/vol_increase.svg")
+  vol_mute.src = chrome.runtime.getURL("../icons/vol_mute.svg")
+  vol_sound.src = chrome.runtime.getURL("../icons/vol_sound.svg")
+  play_speed.src = chrome.runtime.getURL("../icons/play_speed.svg")
 
-seek_ff.id = "seek_ff"
-seek_rewind.id = "seek_rewind"
-vol_decrease.id = "vol_decrease"
-vol_increase.id = "vol_increase"
-vol_mute.id = "vol_mute"
-vol_sound.id = "vol_sound"
-play_speed.id = "play_speed" 
+  seek_ff.id = "seek_ff"
+  seek_rewind.id = "seek_rewind"
+  vol_decrease.id = "vol_decrease"
+  vol_increase.id = "vol_increase"
+  vol_mute.id = "vol_mute"
+  vol_sound.id = "vol_sound"
+  play_speed.id = "play_speed" 
 
-// From dryicons
-iconsDict["seek_ff"] = seek_ff;
-iconsDict["seek_rewind"] = seek_rewind;
-iconsDict["vol_decrease"] = vol_decrease;
-iconsDict["vol_increase"] = vol_increase;
-iconsDict["vol_mute"] = vol_mute;
-iconsDict["vol_sound"] = vol_sound;
-iconsDict["play_speed"] = play_speed;
-document.body.append(iconWrapper)
+  // From dryicons
+  iconsDict["seek_ff"] = seek_ff;
+  iconsDict["seek_rewind"] = seek_rewind;
+  iconsDict["vol_decrease"] = vol_decrease;
+  iconsDict["vol_increase"] = vol_increase;
+  iconsDict["vol_mute"] = vol_mute;
+  iconsDict["vol_sound"] = vol_sound;
+  iconsDict["play_speed"] = play_speed;
+  document.body.append(iconWrapper)
   convertImages(iconsDict, ()=>{} )
 }
 
@@ -282,7 +295,7 @@ function setupStyles() {
       width: 16px;
       pointer-events: none; 
       opacity: 0;
-      filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+      filter: drop-shadow(2px 3px 2px rgb(0 0 0 / 0.6));
     }    
     #mouse-vid-icon-wrapper span {
       color: white;
@@ -432,7 +445,8 @@ function run() {
   getAllWrapingElesAux() 
   setupStyles()
   setupIcons()
-  window.addEventListener('wheel', main);
+  // window.addEventListener('wheel', () => {} , { passive: false }) 
+  window.addEventListener('wheel', main,{ passive: false });
   window.addEventListener('mousedown', muteMiddleClick)
   auxMiddleMouseClick()
   // document.querySelector('video').addEventListener('mousedown', () => console.log("you clicked 123"))
