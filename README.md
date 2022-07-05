@@ -4,10 +4,6 @@ Mouse & Video is an extension that allows you to seek, change volume, brightness
 
 Feel free to contribute!
 
-##### Note
-- Chrome requries manifest 3, Firefox on manifest 2.   
-- The two manifests manifest.chrome.json and manifest.firefox, I copy and paste that into manifest.json individually then run the build.
-
 ### Start with development:  
  1. remove the `min` in `/scripts/background.min.js` and `/scripts/script.min.js` in `manifest.json`
  2. $ web-ext run     
@@ -18,3 +14,8 @@ Feel free to contribute!
  2. `$ google-closure-compiler -O SIMPLE --externs ./externs.js --js ./scripts/script.js --js_output_file ./scripts/script.min.js`                       
  2. `$ web-ext build --overwrite-dest --ignore-files ./scripts/background.js ./scripts/script.js ./unused-assets`                   
  3. (Reminder) Change the variable `let isDebugging` to `false` 
+
+ 
+##### Note
+- Chrome requries manifest 3, Firefox on manifest 2.   
+- The two manifests manifest.chrome.json and manifest.firefox, I copy and paste that into manifest.json individually then run the build.
