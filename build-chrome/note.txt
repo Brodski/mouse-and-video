@@ -1,0 +1,3 @@
+The property "browser_specific_settings" is not allowed in chrome -.-
+
+I don't know an easy work around, i just delete that property then rebuild.

@@ -4,6 +4,9 @@ Mouse & Video is an extension that allows you to seek, change volume, brightness
 
 Feel free to contribute!
 
+# Note
+Chrome requries manifest 3, Firefox on manifest 2.   
+The two manifests manifest.chrome.json and manifest.firefox, I copy and paste that into manifest.json individually then run the build.
 
 ### Start with development:  
  1. remove the `min` in `/scripts/background.min.js` and `/scripts/script.min.js` in `manifest.json`

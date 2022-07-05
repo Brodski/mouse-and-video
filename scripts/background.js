@@ -1,18 +1,16 @@
 // Development stuff
+// let isDebugging = true;
 // function LOG() {
-//   // let isDebugging = true;
-//   let isDebugging = false;
+//   let argz = Array.from(arguments)
 //   if (isDebugging) {
-//     let argz = Array.from(arguments)
 //     console.log(... argz)
+//   }
+//     else if (isDebugging == false) {
+//     console.log = function (... argz) { return };
 //   }
 // }
 
-// Development stuff
-let isDebugging = false;
-if (isDebugging == false) {
-  console.log = function (... argz) { return };
-}
+
 
 // Begin
 let run = true;
@@ -21,7 +19,7 @@ let popups = {};
 
 // browser.tabs.onActivated.addListener((info) => {
 chrome.tabs.onActivated.addListener((info) => {
-  console.log("background - activated!" )
+  //console.log("background - activated!" )
   // browser.windows.get(info.windowId).then((window) => {
     chrome.windows.get(info.windowId).then((window) => {
     if (window.type !== "popup") {
@@ -81,22 +79,22 @@ function handlePopUp(message, sender) {
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender) {
-  console.log("Background - Recieved message from content script  ---- ", message)
+  //console.log("Background - Recieved message from content script  ---- ", message)
   if (message.showIcon) {
     //chrome.pageAction.show(sender.tab.id);
   } 
   else if (message.popup) {
-    console.log("Background - POPUP ", message)
+    //console.log("Background - POPUP ", message)
     handlePopUp(message, sender)
   } 
   else if (message.popoutSetting == "fullscreen") {
-    console.log("Background - FULLSCREEN ", message)
+    //console.log("Background - FULLSCREEN ", message)
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/query
     function onError(error) {
-      console.log(`Error: ${error}`);
+      //console.log(`Error: ${error}`);
     }
     function onCreated(tab) {
-      console.log(`Created new tab: `, tab)
+      //console.log(`Created new tab: `, tab)
     }
 
     
@@ -113,7 +111,7 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   }
 
   
-  console.log("Background, sender.tab.id", sender.tab.id)
+  //console.log("Background, sender.tab.id", sender.tab.id)
   chrome.tabs.sendMessage(sender.tab.id, {
     run: true,
   });
