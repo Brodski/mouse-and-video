@@ -3,11 +3,11 @@
 	"name": "__MSG_extensionName__",
 	"description": "__MSG_extensionDescription__",
 	"default_locale": "en",
-	"version": "3",
+	"version": "3.3.2",
 
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "charlesmcmurphy1@gmail.com"
+			"id": "cwasy_amewicans@hotmail.com"
 		}
 	},
 
@@ -31,7 +31,7 @@
 			"16": "/icons/V1-16x.png",
 			"32": "/icons/V1-16x.png"
 		},
-		"default_title": "Mouse and Video",
+		"default_title": "Bski's Control Video with Mouse",
 		"default_popup": "/html/options.html"
 	},
 

@@ -1,10 +1,10 @@
 {
   "extensionName": {
-    "message": "Mouse & Video"
+    "message": "Bski's Control Video with Mouse"
   },
 
   "extensionDescription": {
-    "message": "This extension allows you to control a video player by using the mouse wheel."
+    "message": "Volume up/down, skip forward/backwards, and speed can be controlled with the mouse"
   },
 
   "fb_title": {
