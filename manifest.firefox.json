@@ -3,7 +3,7 @@
 	"name": "__MSG_extensionName__",
 	"description": "__MSG_extensionDescription__",
 	"default_locale": "en",
-	"version": "3.3.2",
+	"version": "3.3.3",
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -31,7 +31,7 @@
 			"16": "/icons/V1-16x.png",
 			"32": "/icons/V1-16x.png"
 		},
-		"default_title": "Bski's Control Video with Mouse",
+		"default_title": "__MSG_extensionName__",
 		"default_popup": "/html/options.html"
 	},
 
