@@ -1,5 +1,10 @@
 Extension for Firefox & Chrome
 
+[Mozilla Addons link](https://addons.mozilla.org/en-GB/firefox/addon/bski-control-video-with-mouse/)  
+[Chrome Extensions link](https://addons.mozilla.org/en-US/firefox/addon/bski-control-video-with-mouse)
+
+---  
+  
 Mouse & Video is an extension that allows you to seek, change volume, brightness, speed, switch to fullscreen, open the video in a popup window (PIP) simply by scrolling the mouse wheel on the designated areas in the HTML5 video player. 
 
 Feel free to contribute!
