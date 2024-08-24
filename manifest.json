@@ -3,7 +3,7 @@
 	"name": "__MSG_extensionName__",
 	"description": "__MSG_extensionDescription__",
 	"default_locale": "en",
-	"version": "3.3.3",
+	"version": "4.0.0",
 
 	"browser_specific_settings": {
 		"gecko": {
@@ -21,7 +21,6 @@
 		{
 			"matches":["<all_urls>"],
 			"js":["/scripts/script.js"],
-			"jsX":["/scripts/script.js"],
 			"css":["/style/popup.css"],
 			"all_frames": true
 		}
