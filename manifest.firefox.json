@@ -20,7 +20,8 @@
 	"content_scripts":[
 		{
 			"matches":["<all_urls>"],
-			"js":["/scripts/script.min.js"],
+			"js":["/scripts/script.js"],
+			"jsX":["/scripts/script.js"],
 			"css":["/style/popup.css"],
 			"all_frames": true
 		}

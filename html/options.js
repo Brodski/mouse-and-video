@@ -1,14 +1,7 @@
-function LOG() {
-  // let isDebugging = true;
-  let isDebugging = false;
-  if (isDebugging) {
-    let argz = Array.from(arguments)
-    console.log(... argz)
-  }
-}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //          Adds interactive UI to the options page (ie modals)
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
 window.addEventListener("load", () => {
 
   let volume_hint = document.getElementById("volume_hint");
@@ -33,7 +26,77 @@ window.addEventListener("load", () => {
   }
   document.getElementsByClassName("modal-like")[0].addEventListener("click", () => { modal.classList.toggle("visible") })
 
+  createBlacklistUi()
 })
+
+
+function handleBlacklist(e) {
+  const container = document.getElementById('input-container');
+  let allInputs = [...container.querySelectorAll("input")];
+  let blacklist = []
+  for (let input of allInputs) {
+    if (input.value.trim() != "") {
+      blacklist.push(input.value)
+    }
+  }
+  chrome.storage.local.set({ "blacklist": blacklist }, function() {
+    console.log('Inputs saved');
+    console.log("after:", blacklist)
+  });
+}
+const deleteFromStorage = (count) => {
+    chrome.storage.local.get(function (options) { 
+      let blacklist = options.blacklist;
+      if (blacklist) {
+        blacklist.splice(count, 1);
+        chrome.storage.local.set({ "blacklist": blacklist }, function() {
+          console.log('Inputs saved');
+          console.log("after:", blacklist)
+        });
+      }
+    })
+}
+
+
+const makeBlacklistInput = (count, blackItem) => {
+  const container = document.getElementById('input-container');
+  const miniWrap = document.createElement('div');
+  const newInputDiv = document.createElement('input');
+  const trashIcon = document.createElement('span');
+  trashIcon.className = "trash-icon"
+  trashIcon.innerText = "🗑" // 🗑;
+  trashIcon.addEventListener("click", function() {
+    miniWrap.remove()
+    deleteFromStorage(count)
+  })
+  newInputDiv.setAttribute("type", "text");
+  newInputDiv.setAttribute("id", "count-" + count);
+  newInputDiv.value = blackItem ?? ""
+  newInputDiv.addEventListener("change", handleBlacklist)
+  miniWrap.appendChild(newInputDiv);
+  miniWrap.appendChild(trashIcon);
+  container.appendChild(miniWrap);
+}
+
+
+function createBlacklistUi() {
+
+  chrome.storage.local.get(function (options) { 
+    let blacklist = options.blacklist ?? [""];
+    let count = 0;
+    for (let blackItem of blacklist) {
+      makeBlacklistInput(count, blackItem)
+      count++;
+    }
+  })
+
+
+  const addButton = document.getElementById('add-button');
+  addButton.addEventListener('click', function(e) {
+    e.preventDefault()
+    makeBlacklistInput()
+  });
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //               Manages data state from input fields
@@ -45,10 +108,6 @@ window.onload = function () {
     });
   }
 
-  // const pipCheckbox = document.querySelector("#pip");
-  const popoutLegend = document.querySelector("#pip-field");
-  const pipLegend = document.querySelector("label[for=pip]");
-  const newTabLegend = document.querySelector("label[for=newTab]");
   const disableLegend = document.querySelector("label[for=disable]");
 
   const incrementsLegend = document.querySelector("#fb");
@@ -59,8 +118,6 @@ window.onload = function () {
   const modeLegend = document.querySelector("#mode");
 
   modeLegend.textContent = chrome.i18n.getMessage("mode_title");
-  popoutLegend.textContent = chrome.i18n.getMessage("pop_out_video");
-  pipLegend.textContent = chrome.i18n.getMessage("pip");
   disableLegend.textContent = chrome.i18n.getMessage("disable");
 
   incrementsLegend.textContent = chrome.i18n.getMessage("fb_title");
@@ -77,8 +134,6 @@ window.onload = function () {
   }
 
   chrome.storage.local.get(function (options) {
-    LOG("options.js - Storage - Got something in options")
-    LOG(options)
     if (options.mode === undefined) options.mode = "mode_everything";
     if (options.popoutSetting === undefined) options.popoutSetting = "disable";
 

@@ -84,3 +84,13 @@ img.visible {
   color: #ff7f50;
   cursor: pointer;
 }
+
+.input-container input {
+  /* display: block; */
+}
+.trash-icon {
+  font-size: 22px;
+  color: black;
+  cursor: pointer;
+  padding-left: 4px; 
+}
