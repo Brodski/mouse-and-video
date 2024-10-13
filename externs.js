@@ -38,6 +38,3 @@ browser.tabs.move = function(x) {};
 browser.tabs.create = function(x) {};
 browser.tabs.onActivated.addListener = function(x) {};
 browser.tabs.highlight = function(x) {};
-
-// let mvObject = {};
-// mvObject.popoutSetting = "";

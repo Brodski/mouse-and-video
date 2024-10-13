@@ -1,7 +1,8 @@
 
 // Check if there is video on the page. If there is, send a message to the
 // background script to show the extension's icon and activate it.
-const minVideoWidth = 415;
+const minVideoWidth = 350;
+const minVideoHeight = 350;
 
 // Listener for iframe -> window.top (iframe will have a copy b/c im lazy)
 window.addEventListener("message", function(event) {
@@ -149,7 +150,7 @@ chrome.storage.local.get(function (options) {
     mute_middle_mouse: options.mute_middle_mouse    || true,
     // brightness: 1,
     volume:     0,
-    popoutSetting: options.popoutSetting || "disable",
+    popoutSetting: options.popoutSetting || "fullscreen",
   };
 });
 
@@ -294,7 +295,7 @@ function setupStyles() {
 
 
 function getAllWrapingEles(vid, ancestor) {
-  if (vid.clientWidth < minVideoWidth) { // video too small
+  if (vid.clientWidth < minVideoWidth && vid.clientHeight < minVideoHeight) { // video too small
     return false
   }
   const getAllSiblings = (ele) => {
@@ -368,7 +369,7 @@ function getVidIfPresent(e) {
     }
     
     for (const vid of document.querySelectorAll("video")) {
-      if (vid.clientWidth < minVideoWidth) {
+      if (vid.clientWidth < minVideoWidth && vid.clientHeight < minVideoHeight) {
         //console.log(".....video too small")
         continue
       }
@@ -397,18 +398,22 @@ function getVidIfPresent(e) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
 function run() {
-  console.log(window.location.href, "RUNNNNNNNNNN!!!!!!!!!!!")
+  console.log(window.location.href, "bsk mouse & vid activated b/c video found")
   getAllWrapingElesAux() 
   setupStyles()
   setupIcons()
+  console.log(window)
   window.addEventListener('wheel', main,{ passive: false });
   window.addEventListener('mousedown', muteMiddleClick)
   auxMiddleMouseClick()
+  console.log("XXX")
 
   async function main(e) {    
+    console.log("MAIANAINAN")
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
         
-    if (e.target.clientWidth < minVideoWidth || e.target.mv_on == true) {
+    if ((e.target.clientWidth < minVideoWidth && e.target.clientHeight < minVideoHeight) || e.target.mv_on == true) {
+      console.log("wtf early end")
       return false
     }
 
@@ -432,22 +437,27 @@ function run() {
     let shortcut = getVidIfPresent(e)
     let vid = null
     if ( shortcut == null ) {
+      console.log(1)
       //console.log("Script - VIDEO NULL - nothing ")
       return
     }    
     if ( shortcut.type == "videoElement" ) {
+      console.log(2)
       vid = e.target
       //console.log("Script - VIDEO - Found video refrence - fast 1")
     }
     if ( shortcut.type == "videoReference" ) {
+      console.log(3)
       vid = e.target.videoReference
       //console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
     }
     if ( shortcut.type == "longSearch") {
+      console.log(4)
       vid = shortcut.vid
       //console.log("Script - Found for video refrence - slow 2")
     }
     if ( vid != null) {
+      console.log(5)
       preventStrangeScroll()
       setUpElementWithVideo(e, vid)
     }
@@ -462,26 +472,16 @@ function run() {
         wrapper.appendChild(el);
       }
       let div = document.createElement('div')
-      div.classList = "mv-video-event-container"
-      // let vid = document.querySelector('video')
+      div.classList = "bski-video-event-container"
       wrap(vid, div)
 
-
-      // div.style.position = "relative"
-      // div.style.width = "100%"
-      // div.style.height = "100%"
-      // vid.parentElement.appendChild(div)
-      // //console.log(vid.outerHTML)
-      // div.innerHTML = vid.outerHTML
-      // vid.remove()
-      // div.addEventListener('mousedown', (e) => { //console.log('e', e); e.preventDefault(), true })
       div.addEventListener('mousedown', (e) => { muteMiddleClick(e), true })
-      // vid.parentElement.addEventListener('mousedown', (e) => { muteMiddleClick(e), true })
     })
   }
+
   function muteMiddleClick(e) {
     // If we already computed it, or not a middle mouse click, or if element is too small
-    if ( e.target.mute_on || e.button != 1 || e.target.clientWidth < minVideoWidth ) {
+    if ( e.target.mute_on || e.button != 1 || (e.target.clientWidth < minVideoWidth && e.target.clientHeight < minVideoHeight)) {
       return
     }
 

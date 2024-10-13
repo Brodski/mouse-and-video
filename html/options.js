@@ -108,7 +108,7 @@ window.onload = function () {
     });
   }
 
-  const disableLegend = document.querySelector("label[for=disable]");
+  // const disableLegend = document.querySelector("label[for=disable]");
 
   const incrementsLegend = document.querySelector("#fb");
   const leftInputLabel = document.querySelector("label[for=left]");
@@ -118,7 +118,7 @@ window.onload = function () {
   const modeLegend = document.querySelector("#mode");
 
   modeLegend.textContent = chrome.i18n.getMessage("mode_title");
-  disableLegend.textContent = chrome.i18n.getMessage("disable");
+  // disableLegend.textContent = chrome.i18n.getMessage("disable");
 
   incrementsLegend.textContent = chrome.i18n.getMessage("fb_title");
   leftInputLabel.textContent = chrome.i18n.getMessage("left");
@@ -135,7 +135,7 @@ window.onload = function () {
 
   chrome.storage.local.get(function (options) {
     if (options.mode === undefined) options.mode = "mode_everything";
-    if (options.popoutSetting === undefined) options.popoutSetting = "disable";
+    if (options.popoutSetting === undefined) options.popoutSetting = "fullscreen";
 
     document.querySelector("[name='left'").value = options.left || 5;
     document.querySelector("[name='middle'").value = options.middle || 10;
@@ -143,6 +143,6 @@ window.onload = function () {
     document.querySelector("[name='volumeRate'").value = options.volumeRate || 6;
     document.querySelector("[name='mute_middle_mouse'").checked = options.mute_middle_mouse == false ? false : true;
     document.querySelector("#" + options.mode).checked = true;
-    document.querySelector("#" + options.popoutSetting).checked = true;
+    // document.querySelector("#" + options.popoutSetting).checked = true;
   });
 };
