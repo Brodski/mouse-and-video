@@ -31,9 +31,9 @@ chrome.runtime.onMessage.addListener(function (message, sender) {
   } 
   else if (message.popoutSetting == "fullscreen") {
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/query
-    function onCreated(tab) {
-      //console.log(`Created new tab: `, tab)
-    }
+    // function onCreated(tab) {
+    //   console.log(`Created new tab: `, tab)
+    // }
     var creating = chrome.tabs.create({
       active: true,
       windowId: sender.tab.windowId,

@@ -296,6 +296,7 @@ function setupStyles() {
 
 function getAllWrapingEles(vid, ancestor) {
   if (vid.clientWidth < minVideoWidth && vid.clientHeight < minVideoHeight) { // video too small
+    // console.log("VIDEO TOO SMALL 1")
     return false
   }
   const getAllSiblings = (ele) => {
@@ -320,10 +321,12 @@ function getAllWrapingEles(vid, ancestor) {
       && vid.getBoundingClientRect().height == ele.getBoundingClientRect().height
       && vid.offsetLeft == ele.offsetLeft
       && vid.offsetHeight == ele.offsetHeight)  {
-        ////console.log(" ✔✔✔✔✔ Adding candidate")
+        // console.log(" ✔✔✔✔✔ Adding candidate")
+        // console.log(vid)
         ele.videoReference = vid
     } else {
-      ////console.log(" X X X X NOT adding candidate")
+      // console.log(" X X X X NOT adding candidate")
+      // console.log(vid)
     }
   }
 }
@@ -358,33 +361,34 @@ function setUpElementWithVideo(e, vid) {
 // Sometimes elements are wrapping the video such that the event (specifically, event.target) won't 'see' the <video>
 // element and instead see the wrapper.
 function getVidIfPresent(e) {
-  if (!document.mv_pause_function && !e.target.isNotAVideoWrapper) {
+  // if (!document.mv_pause_function && !e.target.isNotAVideoWrapper) {
+  if (!document.mv_pause_function) {
     if (e.target.tagName == "VIDEO") {
-      //console.log("SHORTCUT FINDER - vidElement")
+      // console.log("SHORTCUT FINDER - vidElement")
       return { "type": "videoElement"}
     }
     if (e.target.videoReference) {
-      //console.log("SHORTCUT FINDER - videoReference")
+      // console.log("SHORTCUT FINDER - videoReference")
       return { "type": "videoReference" }      
     }
     
     for (const vid of document.querySelectorAll("video")) {
       if (vid.clientWidth < minVideoWidth && vid.clientHeight < minVideoHeight) {
-        //console.log(".....video too small")
+        // console.log("VIDEO TOO SMALL 2")
         continue
       }
-      
+
       if (
         e.clientY >= vid.getBoundingClientRect().y 
         && e.clientY <= vid.getBoundingClientRect().y + vid.clientHeight 
         && e.clientX >= vid.getBoundingClientRect().x 
         && e.clientX <= vid.getBoundingClientRect().x + vid.clientWidth 
       ) {
-        //console.log("SHORTCUT FINDER - longsearch")
+        // console.log("SHORTCUT FINDER - longsearch")
         return { "type": "longSearch", "vid": vid  }
       }
     }
-    e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... a little
+    // e.target.isNotAVideoWrapper = true; // prevents unneccessary running code. ... a little
     //console.log("SHORTCUT FINDER - nothing")
   }
 }
@@ -402,18 +406,15 @@ function run() {
   getAllWrapingElesAux() 
   setupStyles()
   setupIcons()
-  console.log(window)
   window.addEventListener('wheel', main,{ passive: false });
   window.addEventListener('mousedown', muteMiddleClick)
   auxMiddleMouseClick()
-  console.log("XXX")
 
-  async function main(e) {    
-    console.log("MAIANAINAN")
+  async function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
         
     if ((e.target.clientWidth < minVideoWidth && e.target.clientHeight < minVideoHeight) || e.target.mv_on == true) {
-      console.log("wtf early end")
+      // console.log("VIDEO TOO SMALL 3")
       return false
     }
 
@@ -437,27 +438,22 @@ function run() {
     let shortcut = getVidIfPresent(e)
     let vid = null
     if ( shortcut == null ) {
-      console.log(1)
-      //console.log("Script - VIDEO NULL - nothing ")
+      // console.log("Script - VIDEO NULL - nothing ")
       return
     }    
     if ( shortcut.type == "videoElement" ) {
-      console.log(2)
       vid = e.target
-      //console.log("Script - VIDEO - Found video refrence - fast 1")
+      // console.log("Script - VIDEO - Found video refrence - fast 1")
     }
     if ( shortcut.type == "videoReference" ) {
-      console.log(3)
       vid = e.target.videoReference
-      //console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
+      // console.log("Script - VIDEOREFERENCE - Found video refrence - fast 2")
     }
     if ( shortcut.type == "longSearch") {
-      console.log(4)
       vid = shortcut.vid
-      //console.log("Script - Found for video refrence - slow 2")
+      // console.log("Script - Found for video refrence - slow 2")
     }
     if ( vid != null) {
-      console.log(5)
       preventStrangeScroll()
       setUpElementWithVideo(e, vid)
     }
@@ -534,6 +530,7 @@ function run() {
 
 function wheel(e, vid) {
   if (document.mv_pause_function) {
+    console.log("PAUSE FUNCTION????!")
     return
   }  
   e.preventDefault();
@@ -805,7 +802,6 @@ function close_popup(activatePopupTab) {
 
 
 function activateFullScreen() {
-  console.log("IN OPEN POPUP")
   if (document.mv_playing_on_popup) {
     close_popup(false);
   } 
