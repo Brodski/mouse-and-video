@@ -151,6 +151,7 @@ chrome.storage.local.get(function (options) {
     // brightness: 1,
     volume:     0,
     popoutSetting: options.popoutSetting || "fullscreen",
+    minVideoWidth: options.ignore_width || minVideoWidth,
   };
 });
 
@@ -295,7 +296,7 @@ function setupStyles() {
 
 
 function getAllWrapingEles(vid, ancestor) {
-  if (vid.clientWidth < minVideoWidth && vid.clientHeight < minVideoHeight) { // video too small
+  if (vid.clientWidth < mvObject.minVideoWidth) { // video too small
     // console.log("VIDEO TOO SMALL 1")
     return false
   }
@@ -373,7 +374,7 @@ function getVidIfPresent(e) {
     }
     
     for (const vid of document.querySelectorAll("video")) {
-      if (vid.clientWidth < minVideoWidth && vid.clientHeight < minVideoHeight) {
+      if (vid.clientWidth <  mvObject.minVideoWidth) {
         // console.log("VIDEO TOO SMALL 2")
         continue
       }
@@ -413,7 +414,7 @@ function run() {
   async function main(e) {
     /* document.mv_pause_main is useful when transitioning to the popup. Otherwise document.mv_popup_element will change when scrolling too fast */
         
-    if ((e.target.clientWidth < minVideoWidth && e.target.clientHeight < minVideoHeight) || e.target.mv_on == true) {
+    if ((e.target.clientWidth < mvObject.minVideoWidth) || e.target.mv_on == true) {
       // console.log("VIDEO TOO SMALL 3")
       return false
     }
@@ -477,7 +478,7 @@ function run() {
 
   function muteMiddleClick(e) {
     // If we already computed it, or not a middle mouse click, or if element is too small
-    if ( e.target.mute_on || e.button != 1 || (e.target.clientWidth < minVideoWidth && e.target.clientHeight < minVideoHeight)) {
+    if ( e.target.mute_on || e.button != 1 || (e.target.clientWidth < mvObject.minVideoWidth)) {
       return
     }
 

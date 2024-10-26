@@ -102,12 +102,6 @@ function createBlacklistUi() {
 //               Manages data state from input fields
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 window.onload = function () {
-  function saveChanges(option, value) {
-    chrome.storage.local.set({
-      [option]: value,
-    });
-  }
-
   // const disableLegend = document.querySelector("label[for=disable]");
 
   const incrementsLegend = document.querySelector("#fb");
@@ -129,7 +123,9 @@ window.onload = function () {
   for (const input of document.querySelectorAll("input")) {
     input.addEventListener("blur", (e) => {
       let value = e.target.type == "checkbox" ? e.target.checked : e.target.value;
-      saveChanges(e.target.name, value);
+      chrome.storage.local.set({
+        [e.target.name]: value,
+      });
     });
   }
 
@@ -143,6 +139,7 @@ window.onload = function () {
     document.querySelector("[name='volumeRate'").value = options.volumeRate || 6;
     document.querySelector("[name='mute_middle_mouse'").checked = options.mute_middle_mouse == false ? false : true;
     document.querySelector("#" + options.mode).checked = true;
+    document.querySelector("#ignore_width").value = options?.ignore_width ? options.ignore_width : null;
     // document.querySelector("#" + options.popoutSetting).checked = true;
   });
 };
