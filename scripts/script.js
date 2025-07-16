@@ -540,11 +540,6 @@ function wheel(e, vid) {
   const cX = e.clientX - Math.round(vid.getBoundingClientRect().x);
   const delta = e.deltaY;
 
-  // if (e.shiftKey) {
-  //   setBrightness(delta, vid);
-  //   return
-  // } 
-
   // Change time position
   if (mvObject.mode === "mode_seek_middle") {        
     vid.currentTime += getIncrement(delta, mvObject.middle);
@@ -562,11 +557,10 @@ function wheel(e, vid) {
 
     // bottom half
     if (e.offsetY <= vid.clientHeight / 2) {
-      if (cX < vid.clientWidth - (90 / 100) * vid.clientWidth) {        
-        console.log("-------> POP-UP/FULLSCREEN")
+      if (cX < vid.clientWidth - (75 / 100) * vid.clientWidth) {
         controlPopoutEvent({delta, vid, e})
 
-      } else if (cX > vid.clientWidth - (10 / 100) * vid.clientWidth) {  
+      } else if (cX > vid.clientWidth - (25 / 100) * vid.clientWidth) {  
         changePlaybackRate(delta, vid);
       } else {  
         changeVolume(delta, vid);

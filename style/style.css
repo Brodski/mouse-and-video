@@ -87,6 +87,7 @@ img.visible {
 
 .input-container input {
   /* display: block; */
+  width: 93%;
 }
 .trash-icon {
   font-size: 22px;

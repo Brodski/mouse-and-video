@@ -29,7 +29,6 @@ window.addEventListener("load", () => {
   createBlacklistUi()
 })
 
-
 function handleBlacklist(e) {
   const container = document.getElementById('input-container');
   let allInputs = [...container.querySelectorAll("input")];
