@@ -1,7 +1,6 @@
-Extension for Firefox & Chrome
-
-[Mozilla Addons link](https://addons.mozilla.org/en-GB/firefox/addon/bski-control-video-with-mouse/)  
-[Chrome Extensions link](https://addons.mozilla.org/en-US/firefox/addon/bski-control-video-with-mouse)
+# Mouse Control: Volume, Skip, & Speed for Video
+Extension for Firefox & Chrome  
+[Mozilla link](https://addons.mozilla.org/en-GB/firefox/addon/control-video-with-mouse)  
 
 ---  
   
